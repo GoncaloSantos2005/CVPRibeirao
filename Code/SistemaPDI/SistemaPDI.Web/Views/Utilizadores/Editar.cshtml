@@ -1,0 +1,55 @@
+﻿@using SistemaPDI.Domain.Enums
+@model SistemaPDI.Contracts.DTOs.AtualizarUtilizadorDto
+
+@{
+    ViewData["Title"] = "Editar Utilizador";
+    ViewBag.Layout = Model.Perfil == Perfil.SOCORRISTA
+        ? "~/Views/Shared/_LayoutSocorrista.cshtml"
+        : "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>Editar Utilizador</h4>
+        <a asp-action="Index" class="btn btn-outline-secondary">← Voltar</a>
+    </div>
+
+    <div class="card shadow" style="max-width: 600px;">
+        <div class="card-body p-4">
+
+            <div asp-validation-summary="All" class="alert alert-danger"
+                 style="display:@(ViewData.ModelState.IsValid ? "none" : "block")">
+            </div>
+
+            <form asp-action="Editar" asp-route-id="@ViewBag.UtilizadorId" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" value="@ViewBag.Email" disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NomeCompleto" class="form-label">Nome Completo</label>
+                    <input asp-for="NomeCompleto" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Perfil" class="form-label">Perfil</label>
+                    <select asp-for="Perfil" class="form-select"
+                            asp-items="Html.GetEnumSelectList<SistemaPDI.Domain.Enums.Perfil>()">
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Ativo" class="form-label">Estado</label>
+                    <select asp-for="Ativo" class="form-select">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-danger w-100">Guardar Alterações</button>
+            </form>
+
+        </div>
+    </div>
+</div>

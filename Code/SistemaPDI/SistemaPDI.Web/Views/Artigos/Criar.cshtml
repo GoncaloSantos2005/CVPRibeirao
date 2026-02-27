@@ -1,0 +1,118 @@
+﻿@using SistemaPDI.Contracts.DTOs
+@model CriarArtigoDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Novo Artigo";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar ao Catálogo
+    </a>
+    <h4 class="fw-bold text-dark mt-2">Criar Novo Artigo</h4>
+    <p class="text-muted" style="font-size: 13px;">Preencha os dados do novo material a adicionar ao sistema.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4">
+            <form asp-action="Criar" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">SKU / Código <span class="text-danger">*</span></label>
+                        <input asp-for="SKU" class="form-control" placeholder="Ex: LUV-001" />
+                        <span asp-validation-for="SKU" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Categoria <span class="text-danger">*</span></label>
+                        <select asp-for="CategoriaId" class="form-select">
+                            <option value="">-- Selecionar Categoria --</option>
+                            @foreach (var cat in ViewBag.Categorias as List<CategoriaDto> ?? new List<CategoriaDto>())
+                            {
+                                <option value="@cat.Id">@cat.Nome</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Nome do Artigo <span class="text-danger">*</span></label>
+                        <input asp-for="Nome" class="form-control" placeholder="Ex: Luvas de Nitrilo (M)" />
+                        <span asp-validation-for="Nome" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Descrição Detalhada</label>
+                        <textarea asp-for="Descricao" class="form-control" rows="3" placeholder="Informações adicionais sobre o material..."></textarea>
+                        <span asp-validation-for="Descricao" class="text-danger small"></span>
+                    </div>
+
+                    <hr class="my-4 text-muted" />
+                    <h6 class="fw-bold mb-3"><i class="bi bi-image me-2"></i>Imagem do Produto</h6>
+
+                    <div class="col-md-6">
+                        <label for="imagem" class="form-label small fw-semibold">Selecionar Imagem</label>
+                        <input type="file" class="form-control" id="imagem" name="imagem" accept="image/*" />
+                        <small class="text-muted">JPG, PNG, GIF, WEBP (máx 5MB)</small>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 bg-light text-center" style="min-height: 150px;">
+                            <img id="preview" src="#" alt="Preview"
+                                 style="max-width: 100%; max-height: 150px; display: none;"
+                                 class="img-thumbnail" />
+                            <p id="previewPlaceholder" class="text-muted mb-0 mt-4">
+                                <i class="bi bi-image" style="font-size: 2rem;"></i><br />
+                                Pré-visualização
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-muted" />
+                    <h6 class="fw-bold mb-3"><i class="bi bi-bell me-2"></i>Limites de Monitorização de Stock</h6>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Stock Mínimo (Alerta Amarelo) <span class="text-danger">*</span></label>
+                        <input asp-for="StockMinimo" type="number" class="form-control" />
+                        <span asp-validation-for="StockMinimo" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Stock Crítico (Alerta Vermelho) <span class="text-danger">*</span></label>
+                        <input asp-for="StockCritico" type="number" class="form-control" />
+                        <span asp-validation-for="StockCritico" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-cvp px-4">Guardar Artigo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.getElementById('imagem').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('preview');
+            const placeholder = document.getElementById('previewPlaceholder');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        });
+    </script>
+}

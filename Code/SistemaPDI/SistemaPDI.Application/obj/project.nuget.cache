@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "z6K6JBQsjCk=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Application\\SistemaPDI.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\gonca\\.nuget\\packages\\bcrypt.net-next\\4.1.0\\bcrypt.net-next.4.1.0.nupkg.sha512",
+    "C:\\Users\\gonca\\.nuget\\packages\\fluentvalidation\\12.1.1\\fluentvalidation.12.1.1.nupkg.sha512"
+  ],
+  "logs": []
+}

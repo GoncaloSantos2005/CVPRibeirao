@@ -1,0 +1,16 @@
+﻿@{
+    var perfil = ViewBag.Perfil?.ToString();
+
+    if (perfil == "ADMINISTRADOR" || perfil == "GESTOR")
+    {
+        Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    }
+    else if (perfil == "SOCORRISTA")
+    {
+        Layout = "~/Views/Shared/_LayoutSocorrista.cshtml";
+    }
+    else
+    {
+        Layout = null;
+    }
+}

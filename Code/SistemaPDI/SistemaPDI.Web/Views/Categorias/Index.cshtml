@@ -1,0 +1,104 @@
+﻿@using SistemaPDI.Contracts.DTOs
+@model List<CategoriaDto>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Gestão de Categorias";
+    var perfil = ViewBag.Perfil as string;
+    var podeGerir = perfil == "ADMINISTRADOR" || perfil == "GESTOR";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0 text-dark">Gestão de Categorias</h4>
+        <p class="text-muted mb-0" style="font-size: 13px;">Organize os materiais por categorias para facilitar a gestão.</p>
+    </div>
+    @if (podeGerir)
+    {
+        <a asp-action="Criar" class="btn btn-cvp">
+            <i class="bi bi-plus-lg me-1"></i> Nova Categoria
+        </a>
+    }
+</div>
+
+<div class="mb-3 d-flex gap-2">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary @(ViewData["Filtro"] == null ? "active" : "")">Todas</a>
+    @if (podeGerir)
+    {
+        <a asp-action="Desativadas" class="btn btn-sm btn-outline-secondary @(ViewData["Filtro"]?.ToString() == "desativadas" ? "active" : "")">Desativadas</a>
+    }
+</div>
+
+<div class="card p-0 overflow-hidden shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Nome</th>
+                    <th>Descrição</th>
+                    <th class="text-center">Artigos</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-end pe-3">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="5" class="text-center py-5 text-muted">Nenhuma categoria encontrada.</td></tr>
+                }
+                else
+                {
+                    @foreach (var categoria in Model)
+                    {
+                        <tr class="@(!categoria.Ativo ? "table-secondary" : "")">
+                            <td class="ps-3 fw-semibold">
+                                <i class="bi bi-folder2 me-2 text-cvp"></i>@categoria.Nome
+                            </td>
+                            <td class="text-muted small">@(categoria.Descricao ?? "—")</td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">@categoria.TotalArtigos</span>
+                            </td>
+                            <td class="text-center">
+                                @if (categoria.Ativo)
+                                {
+                                    <span class="badge bg-success">Ativa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inativa</span>
+                                }
+                            </td>
+                            <td class="text-end pe-3">
+                                @if (podeGerir)
+                                {
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <a asp-action="Editar" asp-route-id="@categoria.Id" class="btn btn-sm btn-outline-primary py-1 px-2 border-0" title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <form asp-action="AlternarEstado" asp-route-id="@categoria.Id" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary py-1 px-2 border-0" title="Ativar/Desativar">
+                                                <i class="bi bi-power"></i>
+                                            </button>
+                                        </form>
+
+                                        @if (perfil == "ADMINISTRADOR" && categoria.TotalArtigos == 0)
+                                        {
+                                            <form asp-action="Remover" asp-route-id="@categoria.Id" method="post" style="display:inline;"
+                                                  onsubmit="return confirm('ATENÇÃO: Deseja apagar permanentemente esta categoria?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 border-0">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

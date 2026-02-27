@@ -1,0 +1,69 @@
+﻿@using SistemaPDI.Domain.Enums
+@model List<SistemaPDI.Contracts.DTOs.UtilizadorDto>
+
+@{
+    ViewData["Title"] = "Gestão de Utilizadores";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>Gestão de Utilizadores</h4>
+        <a asp-action="Criar" class="btn btn-danger">
+            + Novo Utilizador
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil</th>
+                        <th>Estado</th>
+                        <th>Criado Em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model)
+                    {
+                        <tr>
+                            <td>@u.NomeCompleto</td>
+                            <td>@u.Email</td>
+                            <td>
+                                <span class="badge bg-secondary">@u.Perfil</span>
+                            </td>
+                            <td>
+                                @if (u.Ativo)
+                                {
+                                    <span class="badge bg-success">Ativo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inativo</span>
+                                }
+                            </td>
+                            <td>@u.CriadoEm.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a asp-action="Editar" asp-route-id="@u.Id"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Editar
+                                </a>
+                                <form asp-action="Desativar" asp-route-id="@u.Id"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Desativar utilizador?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Desativar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

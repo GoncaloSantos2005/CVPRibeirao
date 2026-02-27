@@ -1,0 +1,15 @@
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\bin\Debug\net8.0\SistemaPDI.Contracts.deps.json
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\bin\Debug\net8.0\SistemaPDI.Contracts.dll
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\bin\Debug\net8.0\SistemaPDI.Contracts.pdb
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\bin\Debug\net8.0\SistemaPDI.Domain.dll
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\bin\Debug\net8.0\SistemaPDI.Domain.pdb
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\SistemaPDI.Contracts.csproj.AssemblyReference.cache
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\SistemaPDI.Contracts.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\SistemaPDI.Contracts.AssemblyInfoInputs.cache
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\SistemaPDI.Contracts.AssemblyInfo.cs
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\SistemaPDI.Contracts.csproj.CoreCompileInputs.cache
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\SistemaP.DE032F84.Up2Date
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\SistemaPDI.Contracts.dll
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\refint\SistemaPDI.Contracts.dll
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\SistemaPDI.Contracts.pdb
+C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Contracts\obj\Debug\net8.0\ref\SistemaPDI.Contracts.dll

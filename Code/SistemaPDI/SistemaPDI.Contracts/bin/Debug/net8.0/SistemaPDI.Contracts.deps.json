@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "SistemaPDI.Contracts/1.0.0": {
+        "dependencies": {
+          "SistemaPDI.Domain": "1.0.0"
+        },
+        "runtime": {
+          "SistemaPDI.Contracts.dll": {}
+        }
+      },
+      "SistemaPDI.Domain/1.0.0": {
+        "runtime": {
+          "SistemaPDI.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SistemaPDI.Contracts/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SistemaPDI.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

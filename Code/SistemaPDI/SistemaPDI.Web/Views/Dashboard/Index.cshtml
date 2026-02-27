@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    var perfil = ViewBag.Perfil as string;
+    var nome = ViewBag.NomeUtilizador as string;
+}
+
+<div class="mb-4">
+    <h5 style="font-weight:700; color:#1A1A1A;">
+        Bom dia, @nome 👋
+    </h5>
+    <p style="color:var(--text-muted); font-size:14px; margin:0;">
+        @if (perfil == "ADMINISTRADOR")
+        {
+            <span>Tens acesso total ao sistema. Usa a barra lateral para navegar.</span>
+        }
+        else if (perfil == "GESTOR")
+        {
+            <span>Gere as operações diárias de stock pela barra lateral.</span>
+        }
+        else
+        {
+            <span>Consulta artigos e alertas disponíveis.</span>
+        }
+    </p>
+</div>

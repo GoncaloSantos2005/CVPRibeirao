@@ -1,0 +1,205 @@
+﻿@using SistemaPDI.Contracts.DTOs
+@model AtualizarArtigoDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Editar Artigo";
+    var artigoAtual = ViewBag.ArtigoAtual as ArtigoDto;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar ao Catálogo
+    </a>
+    <h4 class="fw-bold text-dark mt-2">Editar Artigo: <span class="text-cvp">@artigoAtual?.Nome</span></h4>
+    <p class="text-muted" style="font-size: 13px;">Atualize as informações base e os alertas de stock.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4">
+            <form asp-action="Editar" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">SKU / Código <span class="text-danger">*</span></label>
+                        <input asp-for="SKU" class="form-control bg-light" readonly title="O SKU geralmente não deve ser alterado após a criação." />
+                        <span asp-validation-for="SKU" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Categoria <span class="text-danger">*</span></label>
+                        <select asp-for="CategoriaId" class="form-select">
+                            <option value="">-- Selecionar Categoria --</option>
+                            @foreach (var cat in ViewBag.Categorias as List<CategoriaDto> ?? new List<CategoriaDto>())
+                            {
+                                <option value="@cat.Id" selected="@(Model.CategoriaId == cat.Id)">@cat.Nome</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Nome do Artigo <span class="text-danger">*</span></label>
+                        <input asp-for="Nome" class="form-control" />
+                        <span asp-validation-for="Nome" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Descrição Detalhada</label>
+                        <textarea asp-for="Descricao" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Descricao" class="text-danger small"></span>
+                    </div>
+
+                    <hr class="my-4 text-muted" />
+                    <h6 class="fw-bold mb-3"><i class="bi bi-image me-2"></i>Imagem do Produto</h6>
+
+                    <div class="col-md-6">
+                        <!-- Imagem Atual -->
+                        @if (!string.IsNullOrEmpty(Model.UrlImagem))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Imagem Atual</label>
+                                <div id="imagemAtual">
+                                    <img src="@Model.UrlImagem" alt="Imagem atual" class="img-thumbnail mb-2" style="max-width: 100%; max-height: 150px;" />
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="removerImagem" name="removerImagem" value="true" />
+                                        <label class="form-check-label text-danger small" for="removerImagem">
+                                            <i class="bi bi-trash"></i> Remover imagem
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Imagem Atual</label>
+                                <p class="text-muted small">Sem imagem</p>
+                            </div>
+                        }
+
+                        <!-- Upload Nova Imagem -->
+                        <div class="mb-3">
+                            <label for="imagem" class="form-label small fw-semibold">
+                                @(string.IsNullOrEmpty(Model.UrlImagem) ? "Adicionar Imagem" : "Trocar Imagem")
+                            </label>
+                            <input type="file" class="form-control" id="imagem" name="imagem" accept="image/*" />
+                            <small class="text-muted">JPG, PNG, GIF, WEBP (máx 5MB)</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <!-- Preview Nova Imagem -->
+                        <div class="border rounded p-3 bg-light text-center" style="min-height: 150px;">
+                            <img id="preview" src="#" alt="Preview" 
+                                 style="max-width: 100%; max-height: 150px; display: none;" 
+                                 class="img-thumbnail" />
+                            <p id="previewPlaceholder" class="text-muted mb-0 mt-4">
+                                <i class="bi bi-image" style="font-size: 2rem;"></i><br />
+                                Pré-visualização
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-muted" />
+                    <h6 class="fw-bold mb-3"><i class="bi bi-bell me-2"></i>Limites de Monitorização de Stock</h6>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Stock Mínimo (Alerta Amarelo) <span class="text-danger">*</span></label>
+                        <input asp-for="StockMinimo" type="number" class="form-control" />
+                        <span asp-validation-for="StockMinimo" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Stock Crítico (Alerta Vermelho) <span class="text-danger">*</span></label>
+                        <input asp-for="StockCritico" type="number" class="form-control" />
+                        <span asp-validation-for="StockCritico" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-cvp px-4">
+                        <i class="bi bi-save me-1"></i> Guardar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small mb-3 text-muted">Estado Atual do Stock</h6>
+
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <span class="small fw-semibold">Stock Físico (Prateleira):</span>
+                    <span class="badge bg-secondary fs-6">@artigoAtual?.StockFisico</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <span class="small fw-semibold">Stock Pendente (Reservado):</span>
+                    <span class="badge bg-info fs-6">@artigoAtual?.StockPendente</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="small fw-bold text-dark">Stock Virtual (Disponível):</span>
+                    <span class="badge bg-dark fs-5">@artigoAtual?.StockVirtual</span>
+                </div>
+
+                <div class="mt-4">
+                    <p class="small text-muted mb-1"><i class="bi bi-info-circle me-1"></i>Preço Médio:</p>
+                    <h5 class="fw-bold">@artigoAtual?.PrecoMedio.ToString("C")</h5>
+                </div>
+
+                <div class="mt-3">
+                    <p class="small text-muted mb-1"><i class="bi bi-calendar3 me-1"></i>Criado em:</p>
+                    <span class="small fw-semibold">@artigoAtual?.CriadoEm.ToString("dd/MM/yyyy")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Preview nova imagem
+        document.getElementById('imagem').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('preview');
+            const placeholder = document.getElementById('previewPlaceholder');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    
+                    // Desmarcar "remover imagem"
+                    const checkbox = document.getElementById('removerImagem');
+                    if (checkbox) checkbox.checked = false;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        });
+
+        // Se marcar "remover", limpar file input e preview
+        const checkboxRemover = document.getElementById('removerImagem');
+        if (checkboxRemover) {
+            checkboxRemover.addEventListener('change', function(e) {
+                const preview = document.getElementById('preview');
+                const placeholder = document.getElementById('previewPlaceholder');
+                
+                if (e.target.checked) {
+                    document.getElementById('imagem').value = '';
+                    preview.style.display = 'none';
+                    placeholder.style.display = 'block';
+                }
+            });
+        }
+    </script>
+}

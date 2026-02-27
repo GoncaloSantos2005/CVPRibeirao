@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Novo Perfil",
+    "Projects": [
+      {
+        "Path": "SistemaPDI.API\\SistemaPDI.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "SistemaPDI.Web\\SistemaPDI.Web.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
