@@ -1,0 +1,152 @@
+﻿@using SistemaPDI.Contracts.DTOs
+@model List<FornecedorDto>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Gestão de Fornecedores";
+    var perfil = ViewBag.Perfil as string;
+    var podeGerir = perfil == "ADMINISTRADOR" || perfil == "GESTOR";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0 text-dark">Gestão de Fornecedores</h4>
+        <p class="text-muted mb-0" style="font-size: 13px;">Gira os fornecedores de material médico.</p>
+    </div>
+    @if (podeGerir)
+    {
+        <a asp-action="Criar" class="btn btn-cvp">
+            <i class="bi bi-plus-lg me-1"></i> Novo Fornecedor
+        </a>
+    }
+</div>
+
+<div class="mb-3 d-flex gap-2">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary @(ViewData["Filtro"] == null ? "active" : "")">Todos</a>
+    <a asp-action="Preferenciais" class="btn btn-sm btn-outline-warning @(ViewData["Filtro"]?.ToString() == "preferenciais" ? "active" : "")">Preferenciais</a>
+    @if (podeGerir)
+    {
+        <a asp-action="Desativados" class="btn btn-sm btn-outline-secondary @(ViewData["Filtro"]?.ToString() == "desativados" ? "active" : "")">Desativados</a>
+    }
+</div>
+
+<div class="card p-0 overflow-hidden shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Nome</th>
+                    <th>NIF</th>
+                    <th>Contacto</th>
+                    <th>Localidade</th>
+                    <th class="text-center">Entrega (dias)</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Encomendas</th>
+                    <th class="text-end pe-3">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">Nenhum fornecedor encontrado.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var f in Model)
+                    {
+                        <tr class="@(!f.Ativo ? "table-secondary" : "")">
+                            <td class="ps-3">
+                                <span class="fw-semibold text-dark">@f.Nome</span>
+                                @if (f.Preferencial)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1" style="font-size:10px;">
+                                        <i class="bi bi-star-fill"></i> PREFERENCIAL
+                                    </span>
+                                }
+                                @if (!string.IsNullOrEmpty(f.PessoaContacto))
+                                {
+                                    <br />
+                                    <small class="text-muted">
+                                        <i class="bi bi-person"></i> @f.PessoaContacto
+                                    </small>
+                                }
+                            </td>
+                            <td class="text-muted small">@f.NIF</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(f.Telefone))
+                                {
+                                    <div class="small"><i class="bi bi-telephone"></i> @f.Telefone</div>
+                                }
+                                @if (!string.IsNullOrEmpty(f.Email))
+                                {
+                                    <div class="small"><i class="bi bi-envelope"></i> @f.Email</div>
+                                }
+                                @if (string.IsNullOrEmpty(f.Telefone) && string.IsNullOrEmpty(f.Email))
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="small">@(f.Localidade ?? "—")</td>
+                            <td class="text-center">
+                                <span class="badge bg-info">@f.TempoEntrega dias</span>
+                            </td>
+                            <td class="text-center">
+                                @if (f.Ativo)
+                                {
+                                    <span class="badge bg-success">Ativo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inativo</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">@f.TotalEncomendas</span>
+                            </td>
+                            <td class="text-end pe-3">
+                                @if (podeGerir)
+                                {
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <a asp-action="Detalhes" asp-route-id="@f.Id" class="btn btn-sm btn-outline-info py-1 px-2 border-0" title="Ver Detalhes">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Editar" asp-route-id="@f.Id" class="btn btn-sm btn-outline-primary py-1 px-2 border-0" title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <form asp-action="AlternarPreferencial" asp-route-id="@f.Id" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-warning py-1 px-2 border-0"
+                                                    title="@(f.Preferencial ? "Remover de Preferenciais" : "Marcar como Preferencial")">
+                                                <i class="bi bi-star@(f.Preferencial ? "-fill" : "")"></i>
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="AlternarEstado" asp-route-id="@f.Id" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary py-1 px-2 border-0" title="Ativar/Desativar">
+                                                <i class="bi bi-power"></i>
+                                            </button>
+                                        </form>
+
+                                        @if (perfil == "ADMINISTRADOR")
+                                        {
+                                            <form asp-action="Remover" asp-route-id="@f.Id" method="post" style="display:inline;"
+                                                  onsubmit="return confirm('ATENÇÃO: Deseja apagar permanentemente este fornecedor?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 border-0">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

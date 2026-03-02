@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "qOiwNtDHi3g=",
+  "dgSpecHash": "7WydouYzqQ4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Infrastructure\\SistemaPDI.Infrastructure.csproj",
+  "projectFilePath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Infrastructure\\SistemaPDI.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\gonca\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\gonca\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",

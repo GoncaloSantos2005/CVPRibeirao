@@ -1,55 +1,98 @@
 ﻿@using SistemaPDI.Domain.Enums
 @model SistemaPDI.Contracts.DTOs.AtualizarUtilizadorDto
-
 @{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
     ViewData["Title"] = "Editar Utilizador";
-    ViewBag.Layout = Model.Perfil == Perfil.SOCORRISTA
-        ? "~/Views/Shared/_LayoutSocorrista.cshtml"
-        : "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4>Editar Utilizador</h4>
-        <a asp-action="Index" class="btn btn-outline-secondary">← Voltar</a>
-    </div>
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar aos Utilizadores
+    </a>
+    <h4 class="fw-bold text-dark mt-2">Editar Utilizador</h4>
+    <p class="text-muted" style="font-size: 13px;">Atualize as informações do utilizador.</p>
+</div>
 
-    <div class="card shadow" style="max-width: 600px;">
-        <div class="card-body p-4">
-
-            <div asp-validation-summary="All" class="alert alert-danger"
-                 style="display:@(ViewData.ModelState.IsValid ? "none" : "block")">
-            </div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4">
+            
+            <div asp-validation-summary="All" class="alert alert-danger mb-3"
+                 style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
 
             <form asp-action="Editar" asp-route-id="@ViewBag.UtilizadorId" method="post">
+                @Html.AntiForgeryToken()
+
                 <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" value="@ViewBag.Email" disabled />
+                    <label class="form-label small fw-semibold">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" class="form-control bg-light" value="@ViewBag.Email" disabled />
+                    </div>
+                    <small class="text-muted">O email não pode ser alterado.</small>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="NomeCompleto" class="form-label">Nome Completo</label>
-                    <input asp-for="NomeCompleto" class="form-control" />
+                    <label class="form-label small fw-semibold">Nome Completo <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input asp-for="NomeCompleto" class="form-control" />
+                    </div>
+                    <span asp-validation-for="NomeCompleto" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Perfil" class="form-label">Perfil</label>
+                    <label class="form-label small fw-semibold">Perfil <span class="text-danger">*</span></label>
                     <select asp-for="Perfil" class="form-select"
-                            asp-items="Html.GetEnumSelectList<SistemaPDI.Domain.Enums.Perfil>()">
+                            asp-items="Html.GetEnumSelectList<Perfil>()">
                     </select>
+                    <span asp-validation-for="Perfil" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Ativo" class="form-label">Estado</label>
+                    <label class="form-label small fw-semibold">Estado</label>
                     <select asp-for="Ativo" class="form-select">
                         <option value="true">Ativo</option>
                         <option value="false">Inativo</option>
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-danger w-100">Guardar Alterações</button>
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-cvp px-4">
+                        <i class="bi bi-save me-1"></i> Guardar Alterações
+                    </button>
+                </div>
             </form>
+        </div>
+    </div>
 
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Sobre os Perfis
+                </h6>
+                
+                <div class="mb-3 pb-3 border-bottom">
+                    <span class="badge badge-socorrista mb-1">SOCORRISTA</span>
+                    <p class="small text-muted mb-0">Acesso apenas para consulta de artigos e alertas.</p>
+                </div>
+
+                <div class="mb-3 pb-3 border-bottom">
+                    <span class="badge badge-gestor mb-1">GESTOR</span>
+                    <p class="small text-muted mb-0">Pode gerir artigos, categorias, entradas e saídas de stock.</p>
+                </div>
+
+                <div>
+                    <span class="badge badge-admin mb-1">ADMINISTRADOR</span>
+                    <p class="small text-muted mb-0">Acesso total: utilizadores, fornecedores e todas as operações.</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

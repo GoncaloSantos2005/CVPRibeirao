@@ -68,5 +68,27 @@ namespace SistemaPDI.API.Controllers
 
             return NoContent();
         }
+
+        // PATCH /api/utilizadores/5/ativar
+        [HttpPatch("{id}/ativar")]
+        public async Task<IActionResult> Ativar(int id)
+        {
+            var resultado = await _utilizadorService.AtivarAsync(id);
+            if (!resultado.Sucesso)
+                return NotFound(new { message = resultado.Erro });
+
+            return NoContent();
+        }
+
+        // PATCH /api/utilizadores/5/reset-password
+        [HttpPatch("{id}/reset-password")]
+        public async Task<IActionResult> ResetPassword(int id, [FromBody] ResetPasswordDto dto)
+        {
+            var resultado = await _utilizadorService.ResetPasswordAsync(id, dto.NovaPassword);
+            if (!resultado.Sucesso)
+                return BadRequest(new { message = resultado.Erro });
+
+            return NoContent();
+        }
     }
 }

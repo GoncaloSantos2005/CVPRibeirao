@@ -1,0 +1,185 @@
+﻿@using SistemaPDI.Contracts.DTOs
+@model FornecedorDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Detalhes do Fornecedor";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar aos Fornecedores
+    </a>
+    <div class="d-flex justify-content-between align-items-start mt-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">
+                @Model.Nome
+                @if (Model.Preferencial)
+                {
+                    <span class="badge bg-warning text-dark ms-2" style="font-size: 12px;">
+                        <i class="bi bi-star-fill"></i> Preferencial
+                    </span>
+                }
+            </h4>
+            <p class="text-muted mb-0" style="font-size: 13px;">
+                NIF: @Model.NIF
+                @if (Model.Ativo)
+                {
+                    <span class="badge bg-success ms-2">Ativo</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary ms-2">Inativo</span>
+                }
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                <i class="bi bi-pencil-square me-1"></i> Editar
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Coluna Esquerda -->
+    <div class="col-md-6">
+        <!-- Contactos -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-person-lines-fill me-2"></i>Contactos
+                </h6>
+                
+                <div class="mb-3">
+                    <label class="small text-muted d-block">Pessoa de Contacto</label>
+                    <span class="fw-semibold">@(Model.PessoaContacto ?? "—")</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small text-muted d-block">Telefone</label>
+                    @if (!string.IsNullOrEmpty(Model.Telefone))
+                    {
+                        <a href="tel:@Model.Telefone" class="text-decoration-none">
+                            <i class="bi bi-telephone me-1"></i>@Model.Telefone
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </div>
+
+                <div>
+                    <label class="small text-muted d-block">Email</label>
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <a href="mailto:@Model.Email" class="text-decoration-none">
+                            <i class="bi bi-envelope me-1"></i>@Model.Email
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Morada -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-geo-alt me-2"></i>Morada
+                </h6>
+                
+                @if (!string.IsNullOrEmpty(Model.Morada) || !string.IsNullOrEmpty(Model.Localidade))
+                {
+                    @if (!string.IsNullOrEmpty(Model.Morada))
+                    {
+                        <p class="mb-1">@Model.Morada</p>
+                    }
+                    <p class="mb-0 text-muted">
+                        @if (!string.IsNullOrEmpty(Model.CodigoPostal))
+                        {
+                            <span>@Model.CodigoPostal</span>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Localidade))
+                        {
+                            <span> @Model.Localidade</span>
+                        }
+                    </p>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Morada não registada</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna Direita -->
+    <div class="col-md-6">
+        <!-- Informações Operacionais -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-truck me-2"></i>Informações Operacionais
+                </h6>
+
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Tempo de Entrega</span>
+                    <span class="badge bg-info">@Model.TempoEntrega dias úteis</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Total de Encomendas</span>
+                    <span class="badge bg-secondary">@Model.TotalEncomendas</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center py-2">
+                    <span class="text-muted small">Registado em</span>
+                    <span class="small">@Model.CriadoEm.ToString("dd/MM/yyyy")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        @if (!string.IsNullOrEmpty(Model.Observacoes))
+        {
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body">
+                    <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                        <i class="bi bi-sticky me-2"></i>Observações
+                    </h6>
+                    <p class="mb-0" style="white-space: pre-wrap;">@Model.Observacoes</p>
+                </div>
+            </div>
+        }
+
+        <!-- Ações Rápidas -->
+        <div class="card border-0 shadow-sm mt-4 bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-lightning me-2"></i>Ações Rápidas
+                </h6>
+                <div class="d-grid gap-2">
+                    <form asp-action="AlternarPreferencial" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-star@(Model.Preferencial ? "-fill" : "") me-1"></i>
+                            @(Model.Preferencial ? "Remover de Preferenciais" : "Marcar como Preferencial")
+                        </button>
+                    </form>
+
+                    <form asp-action="AlternarEstado" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn @(Model.Ativo ? "btn-outline-danger" : "btn-outline-success") w-100">
+                            <i class="bi bi-power me-1"></i>
+                            @(Model.Ativo ? "Desativar Fornecedor" : "Ativar Fornecedor")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

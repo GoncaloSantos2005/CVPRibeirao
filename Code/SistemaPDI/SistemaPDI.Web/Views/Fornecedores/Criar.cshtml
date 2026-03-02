@@ -1,0 +1,104 @@
+﻿@using SistemaPDI.Contracts.DTOs
+@model CriarFornecedorDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Novo Fornecedor";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar aos Fornecedores
+    </a>
+    <h4 class="fw-bold text-dark mt-2">Criar Novo Fornecedor</h4>
+    <p class="text-muted" style="font-size: 13px;">Registe um novo fornecedor de material médico.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4">
+            <form asp-action="Criar" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+                    <!-- Coluna Esquerda -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-uppercase small mb-3 text-muted">Informações Básicas</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nome do Fornecedor <span class="text-danger">*</span></label>
+                            <input asp-for="Nome" class="form-control" placeholder="Ex: MediSupply Portugal" />
+                            <span asp-validation-for="Nome" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">NIF <span class="text-danger">*</span></label>
+                            <input asp-for="NIF" class="form-control" placeholder="Ex: 501234567" maxlength="20" />
+                            <span asp-validation-for="NIF" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Email</label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="comercial@fornecedor.pt" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Telefone</label>
+                            <input asp-for="Telefone" class="form-control" placeholder="253123456" maxlength="20" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Pessoa de Contacto</label>
+                            <input asp-for="PessoaContacto" class="form-control" placeholder="Nome do comercial" />
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-uppercase small mb-3 text-muted">Morada e Operacional</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Morada</label>
+                            <textarea asp-for="Morada" class="form-control" rows="2" placeholder="Rua, Número"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Código Postal</label>
+                                    <input asp-for="CodigoPostal" class="form-control" placeholder="4710-229" maxlength="10" />
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Localidade</label>
+                                    <input asp-for="Localidade" class="form-control" placeholder="Braga" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Tempo de Entrega (dias úteis)</label>
+                            <input asp-for="TempoEntrega" type="number" class="form-control" value="3" min="1" />
+                            <small class="text-muted">Tempo médio de entrega em dias úteis</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Observações</label>
+                            <textarea asp-for="Observacoes" class="form-control" rows="3" placeholder="Notas adicionais sobre o fornecedor"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-cvp px-4">Guardar Fornecedor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

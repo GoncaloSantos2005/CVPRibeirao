@@ -9,3 +9,15 @@ C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\Sis
 C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\refint\SistemaPDI.Domain.dll
 C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\SistemaPDI.Domain.pdb
 C:\Users\gonca\source\CVP\code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\ref\SistemaPDI.Domain.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\bin\Debug\net8.0\SistemaPDI.Domain.deps.json
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\bin\Debug\net8.0\SistemaPDI.Domain.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\bin\Debug\net8.0\SistemaPDI.Domain.pdb
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\SistemaPDI.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\SistemaPDI.Domain.AssemblyInfoInputs.cache
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\SistemaPDI.Domain.AssemblyInfo.cs
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\SistemaPDI.Domain.csproj.CoreCompileInputs.cache
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\SistemaPDI.Domain.sourcelink.json
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\SistemaPDI.Domain.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\refint\SistemaPDI.Domain.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\SistemaPDI.Domain.pdb
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.Domain\obj\Debug\net8.0\ref\SistemaPDI.Domain.dll

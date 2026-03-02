@@ -289,6 +289,143 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "ObterTodos",
+    "RelativePath": "api/Fornecedores",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "incluirInativos",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "Criar",
+    "RelativePath": "api/Fornecedores",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.CriarFornecedorDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "ObterPorId",
+    "RelativePath": "api/Fornecedores/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "Atualizar",
+    "RelativePath": "api/Fornecedores/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.AtualizarFornecedorDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "Apagar",
+    "RelativePath": "api/Fornecedores/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "ToggleAtivo",
+    "RelativePath": "api/Fornecedores/{id}/toggle-ativo",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "TogglePreferencial",
+    "RelativePath": "api/Fornecedores/{id}/toggle-preferencial",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "ObterDropdown",
+    "RelativePath": "api/Fornecedores/dropdown",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
+    "Method": "ObterPreferenciais",
+    "RelativePath": "api/Fornecedores/preferenciais",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "SistemaPDI.API.Controllers.UtilizadoresController",
     "Method": "GetAll",
     "RelativePath": "api/Utilizadores",
@@ -362,6 +499,43 @@
       {
         "Name": "id",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.UtilizadoresController",
+    "Method": "Ativar",
+    "RelativePath": "api/Utilizadores/{id}/ativar",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.UtilizadoresController",
+    "Method": "ResetPassword",
+    "RelativePath": "api/Utilizadores/{id}/reset-password",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.ResetPasswordDto",
         "IsRequired": true
       }
     ],

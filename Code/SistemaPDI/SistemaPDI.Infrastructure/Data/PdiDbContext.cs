@@ -13,11 +13,62 @@ namespace SistemaPDI.Infrastructure.Data
         public DbSet<Artigo> Artigos { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Utilizador> Utilizadores { get; set; }
+        public DbSet<Fornecedor> Fornecedores { get; set; }
         public DbSet<Lote> Lotes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Configuração de Fornecedor
+            modelBuilder.Entity<Fornecedor>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                // Nome obrigatório e único
+                entity.Property(e => e.Nome)
+                    .IsRequired()
+                    .HasMaxLength(200);
+                entity.HasIndex(e => e.Nome).IsUnique();
+
+                // NIF obrigatório e único
+                entity.Property(e => e.NIF)
+                    .IsRequired()
+                    .HasMaxLength(20);
+                entity.HasIndex(e => e.NIF).IsUnique();
+
+                // Email
+                entity.Property(e => e.Email)
+                    .HasMaxLength(200);
+
+                // Telefone
+                entity.Property(e => e.Telefone)
+                    .HasMaxLength(20);
+
+                // Pessoa Contacto
+                entity.Property(e => e.PessoaContacto)
+                    .HasMaxLength(200);
+
+                // Morada
+                entity.Property(e => e.Morada)
+                    .HasMaxLength(500);
+
+                // Código Postal
+                entity.Property(e => e.CodigoPostal)
+                    .HasMaxLength(10);
+
+                // Localidade
+                entity.Property(e => e.Localidade)
+                    .HasMaxLength(100);
+
+                // Observações
+                entity.Property(e => e.Observacoes)
+                    .HasMaxLength(1000);
+
+                // Tempo de Entrega (default 15 )
+                entity.Property(e => e.TempoEntrega)
+                    .HasDefaultValue(15);
+            });
 
             // ── Configuração de CategoriaDtos ────────────────────────────────────
             modelBuilder.Entity<Categoria>(entity =>

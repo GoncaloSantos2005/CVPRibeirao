@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Domain\\SistemaPDI.Domain.csproj": {}
+    "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Domain\\SistemaPDI.Domain.csproj": {}
   },
   "projects": {
-    "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Domain\\SistemaPDI.Domain.csproj": {
+    "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Domain\\SistemaPDI.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Domain\\SistemaPDI.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Domain\\SistemaPDI.Domain.csproj",
         "projectName": "SistemaPDI.Domain",
-        "projectPath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Domain\\SistemaPDI.Domain.csproj",
+        "projectPath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Domain\\SistemaPDI.Domain.csproj",
         "packagesPath": "C:\\Users\\gonca\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Domain\\obj\\",
+        "outputPath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -1,0 +1,141 @@
+﻿@using SistemaPDI.Contracts.DTOs
+@model AtualizarFornecedorDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Editar Fornecedor";
+    var fornecedorAtual = ViewBag.FornecedorAtual as FornecedorDto;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar aos Fornecedores
+    </a>
+    <h4 class="fw-bold text-dark mt-2">Editar Fornecedor: <span class="text-cvp">@fornecedorAtual?.Nome</span></h4>
+    <p class="text-muted" style="font-size: 13px;">Atualize as informações do fornecedor.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4">
+            <form asp-action="Editar" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+                    <!-- Coluna Esquerda -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-uppercase small mb-3 text-muted">Informações Básicas</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nome do Fornecedor <span class="text-danger">*</span></label>
+                            <input asp-for="Nome" class="form-control" />
+                            <span asp-validation-for="Nome" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">NIF <span class="text-danger">*</span></label>
+                            <input asp-for="NIF" class="form-control" maxlength="20" />
+                            <span asp-validation-for="NIF" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Email</label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Telefone</label>
+                            <input asp-for="Telefone" class="form-control" maxlength="20" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Pessoa de Contacto</label>
+                            <input asp-for="PessoaContacto" class="form-control" />
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-uppercase small mb-3 text-muted">Morada e Operacional</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Morada</label>
+                            <textarea asp-for="Morada" class="form-control" rows="2"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Código Postal</label>
+                                    <input asp-for="CodigoPostal" class="form-control" maxlength="10" />
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Localidade</label>
+                                    <input asp-for="Localidade" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Tempo de Entrega (dias úteis)</label>
+                            <input asp-for="TempoEntrega" type="number" class="form-control" min="1" />
+                            <small class="text-muted">Tempo médio de entrega em dias úteis</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Observações</label>
+                            <textarea asp-for="Observacoes" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-cvp px-4">
+                        <i class="bi bi-save me-1"></i> Guardar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small mb-3 text-muted">Informações</h6>
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <span class="small fw-semibold">Total de Encomendas:</span>
+                    <span class="badge bg-secondary fs-6">@fornecedorAtual?.TotalEncomendas</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <span class="small fw-semibold">Preferencial:</span>
+                    @if (fornecedorAtual?.Preferencial == true)
+                    {
+                        <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> Sim</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Não</span>
+                    }
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="small fw-semibold">Estado:</span>
+                    @if (fornecedorAtual?.Ativo == true)
+                    {
+                        <span class="badge bg-success">Ativo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inativo</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

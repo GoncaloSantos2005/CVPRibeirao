@@ -518,11 +518,19 @@
                 <i class="bi bi-bell nav-icon"></i> Alertas
             </a>
 
+            <div class="nav-section-label">Outros</div>
+            <a asp-controller="Categorias" asp-action="Index" class="nav-item-link">
+                <i class="bi bi-inboxes-fill"></i> Categorias
+            </a>
+
             @if (ViewBag.Perfil == "ADMINISTRADOR")
             {
                 <div class="nav-section-label">Administração</div>
                 <a asp-controller="Utilizadores" asp-action="Index" class="nav-item-link">
                     <i class="bi bi-people nav-icon"></i> Utilizadores
+                </a>
+                <a asp-controller="Fornecedores" asp-action="Index" class="nav-item-link">
+                    <i class="bi bi-box-seam"></i> Fornecedores
                 </a>
             }
 

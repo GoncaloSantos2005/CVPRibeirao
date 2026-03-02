@@ -14,6 +14,8 @@ namespace SistemaPDI.Web.Services
         Task<ApiResult<UtilizadorDto>> CriarUtilizadorAsync(RegistarUtilizadorDto dto);
         Task<ApiResult<UtilizadorDto>> AtualizarUtilizadorAsync(int id, AtualizarUtilizadorDto dto);
         Task<ApiResult> DesativarUtilizadorAsync(int id);
+        Task<ApiResult> AtivarUtilizadorAsync(int id);
+        Task<ApiResult> ResetPasswordAsync(int id, string novaPassword);
 
         // ── Artigos ──────────────────────────────────────────────────────────
         Task<ApiResult<List<ArtigoDto>>> ObterArtigosAsync();
@@ -34,5 +36,16 @@ namespace SistemaPDI.Web.Services
         Task<ApiResult<CategoriaDto>> AtualizarCategoriaAsync(int id, AtualizarCategoriaDto dto);
         Task<ApiResult> AlternarEstadoCategoriaAsync(int id);
         Task<ApiResult> RemoverCategoriaAsync(int id);
+
+        // Fornecedores
+        Task<ApiResult<List<FornecedorDto>>> ObterFornecedoresAsync(bool incluirInativos = false);
+        Task<ApiResult<List<FornecedorDropdownDto>>> ObterFornecedoresDropdownAsync();
+        Task<ApiResult<List<FornecedorDropdownDto>>> ObterFornecedoresPreferenciaisAsync();
+        Task<ApiResult<FornecedorDto>> ObterFornecedorPorIdAsync(int id);
+        Task<ApiResult<FornecedorDto>> CriarFornecedorAsync(CriarFornecedorDto dto);
+        Task<ApiResult<FornecedorDto>> AtualizarFornecedorAsync(int id, AtualizarFornecedorDto dto);
+        Task<ApiResult> ToggleAtivoFornecedorAsync(int id);
+        Task<ApiResult> TogglePreferencialFornecedorAsync(int id);
+        Task<ApiResult> ApagarFornecedorAsync(int id);
     }
 }

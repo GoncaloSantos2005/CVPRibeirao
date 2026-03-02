@@ -11,16 +11,33 @@ using System.Threading.Tasks;
 
 namespace SistemaPDI.Application.Services
 {
+    /// <summary>
+    /// Serviço responsável pela autenticação e registo de utilizadores.
+    /// Implementa os casos de uso CdU05.1 (Login) e CdU05.2 (Registo).
+    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IUtilizadorRepository _utilizadorRepository;
 
+        /// <summary>
+        /// Inicializa o serviço de autenticação.
+        /// </summary>
+        /// <param name="utilizadorRepository">Repositório de utilizadores.</param>
         public AuthService(IUtilizadorRepository utilizadorRepository)
         {
             _utilizadorRepository = utilizadorRepository;
         }
 
-        // CdU05.2 - Registar Utilizador
+        /// <summary>
+        /// Regista um novo utilizador no sistema (CdU05.2).
+        /// </summary>
+        /// <param name="dto">Dados do novo utilizador.</param>
+        /// <returns>DTO do utilizador criado ou null se o email já existir.</returns>
+        /// <remarks>
+        /// - O email é normalizado (minúsculas e sem espaços).
+        /// - A password é encriptada com BCrypt (custo 11).
+        /// - O utilizador é criado como ativo por defeito.
+        /// </remarks>
         public async Task<UtilizadorDto?> RegistarAsync(RegistarUtilizadorDto dto)
         {
             if (await _utilizadorRepository.EmailJaExisteAsync(dto.Email))
@@ -47,11 +64,23 @@ namespace SistemaPDI.Application.Services
                 utilizador.NomeCompleto,
                 utilizador.Perfil.ToString(),
                 utilizador.Ativo,
-                utilizador.CriadoEm
+                utilizador.CriadoEm,
+                utilizador.UltimoLogin
             );
         }
 
-        // CdU05.1 - Login (validar na BD)
+        /// <summary>
+        /// Autentica um utilizador no sistema (CdU05.1).
+        /// </summary>
+        /// <param name="dto">Credenciais de login.</param>
+        /// <returns>Resposta com token e dados do utilizador, ou null se falhar.</returns>
+        /// <remarks>
+        /// Validações realizadas:
+        /// - Verifica se o email existe na base de dados.
+        /// - Valida a password com BCrypt.
+        /// - Verifica se a conta está ativa.
+        /// - Atualiza a data do último login em caso de sucesso.
+        /// </remarks>
         public async Task<LoginResponseDto?> LoginAsync(LoginDto dto)
         {
             var utilizador = await _utilizadorRepository.ObterPorEmailAsync(dto.Email);
@@ -77,7 +106,8 @@ namespace SistemaPDI.Application.Services
                 utilizador.NomeCompleto,
                 utilizador.Perfil.ToString(),
                 utilizador.Ativo,
-                utilizador.CriadoEm
+                utilizador.CriadoEm,
+                utilizador.UltimoLogin
             );
 
             return new LoginResponseDto("", utilizadorDto);

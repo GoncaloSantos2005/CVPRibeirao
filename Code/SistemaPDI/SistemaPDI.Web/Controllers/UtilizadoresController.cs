@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using SistemaPDI.Contracts.DTOs;
 using SistemaPDI.Web.Services;
+using SistemaPDI.Domain.Enums;
 
 namespace SistemaPDI.Web.Controllers
 {
@@ -18,7 +19,9 @@ namespace SistemaPDI.Web.Controllers
         }
 
         // GET /Utilizadores
-        public async Task<IActionResult> Index()
+        // GET /Utilizadores?filtro=ativos
+        // GET /Utilizadores?filtro=inativos
+        public async Task<IActionResult> Index(string? filtro)
         {
             var resultado = await _pdiService.ObterUtilizadoresAsync();
             if (!resultado.Sucesso)
@@ -26,7 +29,22 @@ namespace SistemaPDI.Web.Controllers
                 MensagemErro(resultado.Erro!);
                 return View(new List<UtilizadorDto>());
             }
-            return View(resultado.Dados);
+
+            var utilizadores = resultado.Dados ?? new List<UtilizadorDto>();
+
+            // Aplicar filtro
+            if (!string.IsNullOrEmpty(filtro))
+            {
+                utilizadores = filtro.ToLower() switch
+                {
+                    "ativos" => utilizadores.Where(u => u.Ativo).ToList(),
+                    "inativos" => utilizadores.Where(u => !u.Ativo).ToList(),
+                    _ => utilizadores
+                };
+            }
+
+            ViewData["Filtro"] = filtro;
+            return View(utilizadores);
         }
 
         // GET /Utilizadores/Criar
@@ -108,6 +126,42 @@ namespace SistemaPDI.Web.Controllers
             }
 
             MensagemSucesso("Utilizador desativado com sucesso!");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST /Utilizadores/Ativar/5
+        [HttpPost]
+        public async Task<IActionResult> Ativar(int id)
+        {
+            var resultado = await _pdiService.AtivarUtilizadorAsync(id);
+            if (!resultado.Sucesso)
+            {
+                MensagemErro(resultado.Erro!);
+                return RedirectToAction(nameof(Index));
+            }
+
+            MensagemSucesso("Utilizador ativado com sucesso!");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST /Utilizadores/ResetPassword
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(int userId, string novaPassword, string confirmarPassword)
+        {
+            if (novaPassword != confirmarPassword)
+            {
+                MensagemErro("As passwords não coincidem.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            var resultado = await _pdiService.ResetPasswordAsync(userId, novaPassword);
+            if (!resultado.Sucesso)
+            {
+                MensagemErro(resultado.Erro!);
+                return RedirectToAction(nameof(Index));
+            }
+
+            MensagemSucesso("Password redefinida com sucesso!");
             return RedirectToAction(nameof(Index));
         }
     }

@@ -96,7 +96,7 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.ToTable("Artigos");
                 });
 
-            modelBuilder.Entity("SistemaPDI.Domain.Entities.CategoriaDtos", b =>
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Categoria", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -125,6 +125,80 @@ namespace SistemaPDI.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Categorias");
+                });
+
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Fornecedor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("AtualizadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CodigoPostal")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Localidade")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Morada")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("NIF")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Observacoes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PessoaContacto")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Preferencial")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Telefone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("TempoEntrega")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(15);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NIF")
+                        .IsUnique();
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("Fornecedores");
                 });
 
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Lote", b =>
@@ -201,13 +275,13 @@ namespace SistemaPDI.Infrastructure.Migrations
 
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Artigo", b =>
                 {
-                    b.HasOne("SistemaPDI.Domain.Entities.CategoriaDtos", "CategoriaDtos")
+                    b.HasOne("SistemaPDI.Domain.Entities.Categoria", "Categoria")
                         .WithMany("Artigos")
                         .HasForeignKey("CategoriaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CategoriaDtos");
+                    b.Navigation("Categoria");
                 });
 
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Lote", b =>
@@ -221,7 +295,7 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.Navigation("Artigo");
                 });
 
-            modelBuilder.Entity("SistemaPDI.Domain.Entities.CategoriaDtos", b =>
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Categoria", b =>
                 {
                     b.Navigation("Artigos");
                 });

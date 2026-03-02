@@ -4584,11 +4584,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.API\\SistemaPDI.API.csproj",
+      "projectUniqueName": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.API\\SistemaPDI.API.csproj",
       "projectName": "SistemaPDI.API",
-      "projectPath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.API\\SistemaPDI.API.csproj",
+      "projectPath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.API\\SistemaPDI.API.csproj",
       "packagesPath": "C:\\Users\\gonca\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.API\\obj\\",
+      "outputPath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4610,17 +4610,17 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Application\\SistemaPDI.Application.csproj": {
-              "projectPath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Application\\SistemaPDI.Application.csproj"
+            "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Application\\SistemaPDI.Application.csproj": {
+              "projectPath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Application\\SistemaPDI.Application.csproj"
             },
-            "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Contracts\\SistemaPDI.Contracts.csproj": {
-              "projectPath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Contracts\\SistemaPDI.Contracts.csproj"
+            "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Contracts\\SistemaPDI.Contracts.csproj": {
+              "projectPath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Contracts\\SistemaPDI.Contracts.csproj"
             },
-            "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Infrastructure\\SistemaPDI.Infrastructure.csproj": {
-              "projectPath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Infrastructure\\SistemaPDI.Infrastructure.csproj"
+            "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Infrastructure\\SistemaPDI.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Infrastructure\\SistemaPDI.Infrastructure.csproj"
             },
-            "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Web\\SistemaPDI.Web.csproj": {
-              "projectPath": "C:\\Users\\gonca\\source\\CVP\\code\\SistemaPDI\\SistemaPDI.Web\\SistemaPDI.Web.csproj"
+            "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Web\\SistemaPDI.Web.csproj": {
+              "projectPath": "C:\\Users\\gonca\\source\\CVP-temp\\Code\\SistemaPDI\\SistemaPDI.Web\\SistemaPDI.Web.csproj"
             }
           }
         }

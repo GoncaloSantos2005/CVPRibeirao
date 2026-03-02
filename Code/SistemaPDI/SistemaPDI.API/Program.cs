@@ -20,12 +20,14 @@ builder.Services.AddDbContext<PdiDbContext>(options =>
 builder.Services.AddScoped<IArtigoRepository, ArtigoRepository>();
 builder.Services.AddScoped<IUtilizadorRepository, UtilizadorRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IArtigoService, ArtigoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUtilizadorService, UtilizadorService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IFornecedorService, FornecedorService>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

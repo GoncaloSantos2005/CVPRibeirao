@@ -119,6 +119,25 @@ namespace SistemaPDI.Web.Services
 
             return ApiResult.Ok();
         }
+
+        public async Task<ApiResult> AtivarUtilizadorAsync(int id)
+        {
+            var response = await _httpClient.PatchAsync($"api/utilizadores/{id}/ativar", null);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+
+        public async Task<ApiResult> ResetPasswordAsync(int id, string novaPassword)
+        {
+            var dto = new { NovaPassword = novaPassword };
+            var response = await _httpClient.PatchAsync($"api/utilizadores/{id}/reset-password", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
         #endregion
 
         #region Artigos
@@ -285,6 +304,100 @@ namespace SistemaPDI.Web.Services
         public async Task<ApiResult> RemoverCategoriaAsync(int id)
         {
             var response = await _httpClient.DeleteAsync($"api/categorias/{id}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+        #endregion
+
+        #region Fornecedores
+        // ══════════════════════════════════════════════════════════════════════
+        // FORNECEDORES
+        // ══════════════════════════════════════════════════════════════════════
+
+        public async Task<ApiResult<List<FornecedorDto>>> ObterFornecedoresAsync(bool incluirInativos = false)
+        {
+            var url = incluirInativos ? "api/fornecedores?incluirInativos=true" : "api/fornecedores";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<FornecedorDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<FornecedorDto>>(response) ?? new();
+            return ApiResult<List<FornecedorDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<List<FornecedorDropdownDto>>> ObterFornecedoresDropdownAsync()
+        {
+            var response = await _httpClient.GetAsync("api/fornecedores/dropdown");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<FornecedorDropdownDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<FornecedorDropdownDto>>(response) ?? new();
+            return ApiResult<List<FornecedorDropdownDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<List<FornecedorDropdownDto>>> ObterFornecedoresPreferenciaisAsync()
+        {
+            var response = await _httpClient.GetAsync("api/fornecedores/preferenciais");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<FornecedorDropdownDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<FornecedorDropdownDto>>(response) ?? new();
+            return ApiResult<List<FornecedorDropdownDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<FornecedorDto>> ObterFornecedorPorIdAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"api/fornecedores/{id}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<FornecedorDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<FornecedorDto>(response);
+            return ApiResult<FornecedorDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<FornecedorDto>> CriarFornecedorAsync(CriarFornecedorDto dto)
+        {
+            var response = await _httpClient.PostAsync("api/fornecedores", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<FornecedorDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<FornecedorDto>(response);
+            return ApiResult<FornecedorDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<FornecedorDto>> AtualizarFornecedorAsync(int id, AtualizarFornecedorDto dto)
+        {
+            var response = await _httpClient.PutAsync($"api/fornecedores/{id}", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<FornecedorDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<FornecedorDto>(response);
+            return ApiResult<FornecedorDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult> ToggleAtivoFornecedorAsync(int id)
+        {
+            var response = await _httpClient.PatchAsync($"api/fornecedores/{id}/toggle-ativo", null);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+
+        public async Task<ApiResult> TogglePreferencialFornecedorAsync(int id)
+        {
+            var response = await _httpClient.PatchAsync($"api/fornecedores/{id}/toggle-preferencial", null);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+
+        public async Task<ApiResult> ApagarFornecedorAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"api/fornecedores/{id}");
             if (!response.IsSuccessStatusCode)
                 return ApiResult.Falhou(await LerErroAsync(response));
 
