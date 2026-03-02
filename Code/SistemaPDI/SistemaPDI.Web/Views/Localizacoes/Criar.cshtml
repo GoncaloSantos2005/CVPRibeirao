@@ -1,0 +1,122 @@
+@using SistemaPDI.Contracts.DTOs
+@using SistemaPDI.Domain.Enums
+@model CriarLocalizacaoDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Nova Localização";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar às Localizações
+    </a>
+    <h4 class="fw-bold text-dark mt-2">Nova Localização</h4>
+    <p class="text-muted" style="font-size: 13px;">Adicione uma nova localização física ao armazém.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4">
+            <form asp-action="Criar" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Código <span class="text-danger">*</span></label>
+                            <input asp-for="Codigo" class="form-control" placeholder="Ex: LOC001" />
+                            <span asp-validation-for="Codigo" class="text-danger small"></span>
+                            <small class="text-muted">Código único da localização</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Tipo <span class="text-danger">*</span></label>
+                            <select asp-for="Tipo" asp-items="@(ViewBag.TiposLocalizacao as List<SelectListItem>)" class="form-select">
+                            </select>
+                            <span asp-validation-for="Tipo" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Zona <span class="text-danger">*</span></label>
+                            <input asp-for="Zona" class="form-control" placeholder="Ex: A, B, C" />
+                            <span asp-validation-for="Zona" class="text-danger small"></span>
+                            <small class="text-muted">Zona do armazém</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Prateleira</label>
+                            <input asp-for="Prateleira" class="form-control" placeholder="Ex: 1, 2, 3" />
+                            <span asp-validation-for="Prateleira" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nível</label>
+                            <input asp-for="Nivel" class="form-control" placeholder="Ex: 1, 2, 3" />
+                            <span asp-validation-for="Nivel" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Observações</label>
+                    <textarea asp-for="Observacoes" class="form-control" rows="2" placeholder="Observações opcionais..."></textarea>
+                    <span asp-validation-for="Observacoes" class="text-danger small"></span>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-cvp px-4">
+                        <i class="bi bi-plus-lg me-1"></i> Criar Localização
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small mb-3 text-muted">
+                    <i class="bi bi-info-circle me-2"></i>Como funciona o Label
+                </h6>
+                <p class="small text-muted mb-2">
+                    O label é gerado automaticamente a partir dos campos:
+                </p>
+                <code class="d-block bg-white p-2 rounded small mb-3">
+                    TIPO_ZONA_PRATELEIRA_NIVEL
+                </code>
+                <p class="small text-muted mb-0">
+                    <strong>Exemplos:</strong><br>
+                    • PRATELEIRA_A_3_2<br>
+                    • ARMARIO_B_1<br>
+                    • FRIGORIFICO_C
+                </p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small mb-3 text-muted">
+                    <i class="bi bi-tags me-2"></i>Tipos Disponíveis
+                </h6>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-secondary"><i class="bi bi-bookshelf me-1"></i> Prateleira</span>
+                    <span class="badge bg-primary"><i class="bi bi-box-seam me-1"></i> Armário</span>
+                    <span class="badge bg-info"><i class="bi bi-snow me-1"></i> Frigorífico</span>
+                    <span class="badge bg-warning text-dark"><i class="bi bi-geo-alt me-1"></i> Zona</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

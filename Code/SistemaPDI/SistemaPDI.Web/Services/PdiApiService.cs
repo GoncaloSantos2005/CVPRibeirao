@@ -59,6 +59,12 @@ namespace SistemaPDI.Web.Services
             var body = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<T>(body, _jsonOptions);
         }
+        // ── Helper: serializa objeto para StringContent JSON ─────────────────
+        private StringContent Serializar<T>(T obj)
+        {
+            var json = JsonSerializer.Serialize(obj);
+            return new StringContent(json, Encoding.UTF8, "application/json");
+        }
 
         #region Auth
         public async Task<LoginResponseDto?> LoginAsync(LoginDto dto)
@@ -405,11 +411,206 @@ namespace SistemaPDI.Web.Services
         }
         #endregion
 
-        // ── Helper: serializa objeto para StringContent JSON ─────────────────
-        private StringContent Serializar<T>(T obj)
+        #region Lotes
+        // ══════════════════════════════════════════════════════════════════════════════
+        // LOTES
+        // ══════════════════════════════════════════════════════════════════════════════
+        public async Task<ApiResult<List<LoteDto>>> ObterLotesAsync()
         {
-            var json = JsonSerializer.Serialize(obj);
-            return new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.GetAsync("api/lotes");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<LoteDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<LoteDto>>(response) ?? new();
+            return ApiResult<List<LoteDto>>.Ok(dados);
         }
+
+        public async Task<ApiResult<LoteDto>> ObterLotePorIdAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"api/lotes/{id}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<LoteDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<LoteDto>(response);
+            return ApiResult<LoteDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<LoteDto>>> ObterLotesPorArtigoAsync(int artigoId)
+        {
+            var response = await _httpClient.GetAsync($"api/lotes/artigo/{artigoId}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<LoteDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<LoteDto>>(response) ?? new();
+            return ApiResult<List<LoteDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<List<AlertaValidadeDto>>> ObterAlertasValidadeAsync(int dias = 15)
+        {
+            var response = await _httpClient.GetAsync($"api/lotes/alertas-validade?dias={dias}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<AlertaValidadeDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<AlertaValidadeDto>>(response) ?? new();
+            return ApiResult<List<AlertaValidadeDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<LoteDto>> CriarLoteAsync(CriarLoteDto dto)
+        {
+            var response = await _httpClient.PostAsync("api/lotes", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<LoteDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<LoteDto>(response);
+            return ApiResult<LoteDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<LoteDto>> AtualizarLoteAsync(int id, AtualizarLoteDto dto)
+        {
+            var response = await _httpClient.PutAsync($"api/lotes/{id}", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<LoteDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<LoteDto>(response);
+            return ApiResult<LoteDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult> DesativarLoteAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"api/lotes/{id}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+
+        public async Task<ApiResult<ResultadoReservaDto>> ReservarStockAsync(ReservaStockDto dto)
+        {
+            var response = await _httpClient.PostAsync("api/lotes/reservar", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<ResultadoReservaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<ResultadoReservaDto>(response);
+            return ApiResult<ResultadoReservaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult> LibertarReservaAsync(LibertarReservaDto dto)
+        {
+            var response = await _httpClient.PostAsync("api/lotes/libertar-reserva", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+
+        public async Task<ApiResult> ConfirmarSaidaLoteAsync(int loteId, int quantidade)
+        {
+            var response = await _httpClient.PostAsync(
+                $"api/lotes/{loteId}/confirmar-saida",
+                Serializar(new { Quantidade = quantidade }));
+
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+
+        public async Task<ApiResult<int>> ObterStockDisponivelAsync(int artigoId)
+        {
+            var response = await _httpClient.GetAsync($"api/lotes/stock-disponivel/{artigoId}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<int>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<StockDisponivelResponse>(response);
+            return ApiResult<int>.Ok(dados?.StockDisponivel ?? 0);
+        }
+
+        private record StockDisponivelResponse(int ArtigoId, int StockDisponivel);
+        #endregion
+
+        #region Localizações
+        // ══════════════════════════════════════════════════════════════════════════════
+        // LOCALIZAÇÕES
+        // ══════════════════════════════════════════════════════════════════════════════
+
+        public async Task<ApiResult<List<LocalizacaoDto>>> ObterLocalizacoesAsync(bool incluirInativos = false)
+        {
+            var url = incluirInativos ? "api/localizacoes?incluirInativos=true" : "api/localizacoes";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<LocalizacaoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<LocalizacaoDto>>(response) ?? new();
+            return ApiResult<List<LocalizacaoDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<List<LocalizacaoDto>>> ObterLocalizacoesAtivasAsync()
+        {
+            var response = await _httpClient.GetAsync("api/localizacoes/ativas");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<LocalizacaoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<LocalizacaoDto>>(response) ?? new();
+            return ApiResult<List<LocalizacaoDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<LocalizacaoDto>> ObterLocalizacaoPorIdAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"api/localizacoes/{id}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<LocalizacaoDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<LocalizacaoDto>(response);
+            return ApiResult<LocalizacaoDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<LocalizacaoDropdownDto>>> ObterLocalizacoesDropdownAsync()
+        {
+            var response = await _httpClient.GetAsync("api/localizacoes/dropdown");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<LocalizacaoDropdownDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<LocalizacaoDropdownDto>>(response) ?? new();
+            return ApiResult<List<LocalizacaoDropdownDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<LocalizacaoDto>> CriarLocalizacaoAsync(CriarLocalizacaoDto dto)
+        {
+            var response = await _httpClient.PostAsync("api/localizacoes", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<LocalizacaoDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<LocalizacaoDto>(response);
+            return ApiResult<LocalizacaoDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<LocalizacaoDto>> AtualizarLocalizacaoAsync(int id, AtualizarLocalizacaoDto dto)
+        {
+            var response = await _httpClient.PutAsync($"api/localizacoes/{id}", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<LocalizacaoDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<LocalizacaoDto>(response);
+            return ApiResult<LocalizacaoDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult> ToggleAtivoLocalizacaoAsync(int id)
+        {
+            var response = await _httpClient.PatchAsync($"api/localizacoes/{id}/toggle-ativo", null);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+
+        public async Task<ApiResult> ApagarLocalizacaoAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"api/localizacoes/{id}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+        #endregion
     }
 }

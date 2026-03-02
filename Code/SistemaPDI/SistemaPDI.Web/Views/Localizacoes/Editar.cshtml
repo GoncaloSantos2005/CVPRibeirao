@@ -1,0 +1,158 @@
+@using SistemaPDI.Contracts.DTOs
+@using SistemaPDI.Domain.Enums
+@model AtualizarLocalizacaoDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Editar Localização";
+    var localizacaoAtual = ViewBag.LocalizacaoAtual as LocalizacaoDto;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar às Localizações
+    </a>
+    <h4 class="fw-bold text-dark mt-2">Editar Localização: <span class="text-cvp">@localizacaoAtual?.Label</span></h4>
+    <p class="text-muted" style="font-size: 13px;">Atualize as informações da localização.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4">
+            <form asp-action="Editar" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Código <span class="text-danger">*</span></label>
+                            <input asp-for="Codigo" class="form-control" />
+                            <span asp-validation-for="Codigo" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Tipo <span class="text-danger">*</span></label>
+                            <select asp-for="Tipo" asp-items="@(ViewBag.TiposLocalizacao as List<SelectListItem>)" class="form-select">
+                            </select>
+                            <span asp-validation-for="Tipo" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Zona <span class="text-danger">*</span></label>
+                            <input asp-for="Zona" class="form-control" />
+                            <span asp-validation-for="Zona" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Prateleira</label>
+                            <input asp-for="Prateleira" class="form-control" />
+                            <span asp-validation-for="Prateleira" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nível</label>
+                            <input asp-for="Nivel" class="form-control" />
+                            <span asp-validation-for="Nivel" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Observações</label>
+                    <textarea asp-for="Observacoes" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Observacoes" class="text-danger small"></span>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-cvp px-4">
+                        <i class="bi bi-save me-1"></i> Guardar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small mb-3 text-muted">Informações</h6>
+
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <span class="small fw-semibold">Código:</span>
+                    <span class="badge bg-dark">@localizacaoAtual?.Codigo</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <span class="small fw-semibold">Label Atual:</span>
+                    <span class="small fw-semibold text-primary">@localizacaoAtual?.Label</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <span class="small fw-semibold">Tipo:</span>
+                    <span class="badge @GetTipoBadgeClass(localizacaoAtual?.Tipo ?? TipoLocalizacao.PRATELEIRA)">
+                        @localizacaoAtual?.TipoNome
+                    </span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <span class="small fw-semibold">Estado:</span>
+                    @if (localizacaoAtual?.Ativo == true)
+                    {
+                        <span class="badge bg-success">Ativa</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inativa</span>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="small fw-semibold">Criada em:</span>
+                    <span class="small">@localizacaoAtual?.CriadoEm.ToString("dd/MM/yyyy")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small mb-3 text-muted">
+                    <i class="bi bi-lightning me-2"></i>Ações Rápidas
+                </h6>
+                <div class="d-grid gap-2">
+                    <form asp-action="AlternarEstado" asp-route-id="@localizacaoAtual?.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn @(localizacaoAtual?.Ativo == true ? "btn-outline-danger" : "btn-outline-success") w-100">
+                            <i class="bi bi-power me-1"></i>
+                            @(localizacaoAtual?.Ativo == true ? "Desativar Localização" : "Ativar Localização")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
+
+@functions {
+    string GetTipoBadgeClass(TipoLocalizacao tipo)
+    {
+        return tipo switch
+        {
+            TipoLocalizacao.ARMARIO => "bg-primary",
+            TipoLocalizacao.FRIGORIFICO => "bg-info",
+            TipoLocalizacao.ZONA => "bg-warning text-dark",
+            _ => "bg-secondary"
+        };
+    }
+}

@@ -201,6 +201,53 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.ToTable("Fornecedores");
                 });
 
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Localizacao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nivel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Observacoes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Prateleira")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Zona")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Localizacao_Codigo");
+
+                    b.ToTable("Localizacoes");
+                });
+
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Lote", b =>
                 {
                     b.Property<int>("Id")
@@ -212,20 +259,46 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.Property<int>("ArtigoId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("DataValidade")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("LocalizacaoId")
+                        .HasColumnType("int");
 
                     b.Property<string>("NumeroLote")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<decimal>("PrecoUnitario")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("QtdDisponivel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QtdReservada")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArtigoId");
+                    b.HasIndex("ArtigoId")
+                        .HasDatabaseName("IX_Lote_ArtigoId");
+
+                    b.HasIndex("DataValidade")
+                        .HasDatabaseName("IX_Lote_DataValidade");
+
+                    b.HasIndex("LocalizacaoId")
+                        .HasDatabaseName("IX_Lote_LocalizacaoId");
+
+                    b.HasIndex("ArtigoId", "NumeroLote")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Lote_Artigo_NumeroLote");
 
                     b.ToTable("Lotes");
                 });
@@ -289,15 +362,27 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.HasOne("SistemaPDI.Domain.Entities.Artigo", "Artigo")
                         .WithMany()
                         .HasForeignKey("ArtigoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SistemaPDI.Domain.Entities.Localizacao", "Localizacao")
+                        .WithMany("Lotes")
+                        .HasForeignKey("LocalizacaoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Artigo");
+
+                    b.Navigation("Localizacao");
                 });
 
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Categoria", b =>
                 {
                     b.Navigation("Artigos");
+                });
+
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Localizacao", b =>
+                {
+                    b.Navigation("Lotes");
                 });
 #pragma warning restore 612, 618
         }

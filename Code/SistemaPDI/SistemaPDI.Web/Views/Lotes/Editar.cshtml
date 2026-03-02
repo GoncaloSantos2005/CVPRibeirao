@@ -1,0 +1,145 @@
+@using SistemaPDI.Contracts.DTOs
+@model AtualizarLoteDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Editar Lote";
+    var lote = ViewBag.Lote as LoteDto;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar aos Lotes
+    </a>
+    <h4 class="fw-bold text-dark mt-2">Editar Lote: <span class="text-primary">@lote?.NumeroLote</span></h4>
+    <p class="text-muted" style="font-size: 13px;">
+        @lote?.NomeArtigo (@lote?.SKU)
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4">
+            <form asp-action="Editar" asp-route-id="@lote?.Id" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="All" class="alert alert-danger mb-3"
+                     style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+                <!-- Campos não editáveis (apenas visualização) -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-muted">Número do Lote</label>
+                        <input type="text" class="form-control bg-light" value="@lote?.NumeroLote" disabled />
+                        <small class="text-muted">Não editável</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-muted">Artigo</label>
+                        <input type="text" class="form-control bg-light" value="@lote?.NomeArtigo" disabled />
+                        <small class="text-muted">Não editável</small>
+                    </div>
+                </div>
+
+                <hr class="my-3" />
+
+                <!-- Campos editáveis -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Data de Validade <span class="text-danger">*</span></label>
+                        <input asp-for="DataValidade" type="date" class="form-control" />
+                        <span asp-validation-for="DataValidade" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Preço Unitário (€)</label>
+                        <input asp-for="PrecoUnitario" type="number" step="0.01" class="form-control" min="0" />
+                        <span asp-validation-for="PrecoUnitario" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Localização</label>
+                        <select asp-for="LocalizacaoId" asp-items="@(ViewBag.Localizacoes as List<SelectListItem>)" class="form-select">
+                            <option value="">-- Selecione uma localização --</option>
+                        </select>
+                        <span asp-validation-for="LocalizacaoId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Quantidade Disponível</label>
+                        <input asp-for="QtdDisponivel" type="number" class="form-control" min="0" />
+                        <span asp-validation-for="QtdDisponivel" class="text-danger small"></span>
+                        @if (lote?.QtdReservada > 0)
+                        {
+                            <small class="text-warning">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                Mínimo: @lote.QtdReservada (quantidade reservada)
+                            </small>
+                        }
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-cvp px-4">
+                        <i class="bi bi-save me-1"></i> Guardar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Informações
+                </h6>
+
+                <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                    <span class="small">Quantidade Reservada:</span>
+                    <span class="badge bg-warning text-dark">@lote?.QtdReservada</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                    <span class="small">Realmente Disponível:</span>
+                    <span class="badge bg-success">@lote?.QtdRealmenteDisponivel</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                    <span class="small">Estado:</span>
+                    @if (lote?.Ativo == true)
+                    {
+                        <span class="badge bg-success">Ativo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inativo</span>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <span class="small">Criado em:</span>
+                    <span class="small">@lote?.CriadoEm.ToString("dd/MM/yyyy")</span>
+                </div>
+            </div>
+        </div>
+
+        @if (lote?.EstaExpirado == true)
+        {
+            <div class="alert alert-danger mt-3">
+                <i class="bi bi-x-octagon me-2"></i>
+                <strong>EXPIRADO</strong>
+            </div>
+        }
+        else if (lote?.ValidadeProxima == true)
+        {
+            <div class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Validade Próxima</strong>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

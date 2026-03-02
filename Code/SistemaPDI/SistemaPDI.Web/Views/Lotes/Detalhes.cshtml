@@ -1,0 +1,158 @@
+@using SistemaPDI.Contracts.DTOs
+@model LoteDto
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = $"Lote {Model.NumeroLote}";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar aos Lotes
+    </a>
+    <div class="d-flex justify-content-between align-items-start mt-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">
+                Lote: <span class="text-primary">@Model.NumeroLote</span>
+            </h4>
+            <p class="text-muted mb-0" style="font-size: 13px;">
+                @Model.NomeArtigo (@Model.SKU)
+            </p>
+        </div>
+        @* Removido botão Editar - stock gerido via MovimentosStock *@
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Coluna Esquerda -->
+    <div class="col-md-6">
+        <!-- Estado do Lote -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-heart-pulse me-2"></i>Estado do Lote
+                </h6>
+
+                @if (Model.EstaExpirado)
+                {
+                    <div class="alert alert-danger mb-3">
+                        <i class="bi bi-x-octagon me-2"></i>
+                        <strong>EXPIRADO</strong> - Este lote já ultrapassou a data de validade.
+                    </div>
+                }
+                else if (Model.ValidadeProxima)
+                {
+                    <div class="alert alert-warning mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>ATENÇÃO</strong> - Validade próxima (menos de 15 dias).
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-success mb-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>OK</strong> - Lote dentro do prazo de validade.
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Estado</span>
+                    @if (Model.Ativo)
+                    {
+                        <span class="badge bg-success">Ativo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inativo</span>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Data de Validade</span>
+                    <span class="fw-semibold">@Model.DataValidade.ToString("dd/MM/yyyy")</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center py-2">
+                    <span class="text-muted small">Registado em</span>
+                    <span class="small">@Model.CriadoEm.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Localização (apenas leitura - será gerido por tabela Localizacao) -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-geo-alt me-2"></i>Localização
+                </h6>
+
+                @if (!string.IsNullOrEmpty(Model.LocalizacaoLabel))
+                {
+                    <span>@Model.LocalizacaoLabel</span>
+                }
+                else
+                {
+                    <span class="text-muted">Não definida</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna Direita -->
+    <div class="col-md-6">
+        <!-- Stock -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-box-seam me-2"></i>Stock
+                </h6>
+
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="fw-bold text-primary mb-0">@Model.QtdDisponivel</h3>
+                            <small class="text-muted">Total</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="fw-bold text-warning mb-0">@Model.QtdReservada</h3>
+                            <small class="text-muted">Reservado</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="fw-bold text-success mb-0">@Model.QtdRealmenteDisponivel</h3>
+                            <small class="text-muted">Disponível</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center py-2">
+                    <span class="text-muted small">Preço Unitário</span>
+                    <span class="fw-semibold">@Model.PrecoUnitario.ToString("C2")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        @if (Model.Ativo && Model.QtdReservada == 0)
+        {
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                        <i class="bi bi-lightning me-2"></i>Ações Rápidas
+                    </h6>
+                    <div class="d-grid gap-2">
+                        <form asp-action="Desativar" asp-route-id="@Model.Id" method="post"
+                              onsubmit="return confirm('Deseja desativar este lote?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-trash me-1"></i> Desativar Lote
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

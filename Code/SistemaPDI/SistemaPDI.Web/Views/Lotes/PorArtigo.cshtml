@@ -1,0 +1,124 @@
+@using SistemaPDI.Contracts.DTOs
+@model List<LoteDto>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var artigo = ViewBag.Artigo as ArtigoDto;
+    ViewData["Title"] = $"Lotes de {artigo?.Nome ?? "Artigo"}";
+}
+
+<div class="mb-4">
+    <a asp-controller="Artigos" asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar aos Artigos
+    </a>
+    <div class="d-flex justify-content-between align-items-start mt-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Lotes: @artigo?.Nome</h4>
+            <p class="text-muted mb-0" style="font-size: 13px;">
+                SKU: @artigo?.SKU · Stock Total: @artigo?.StockVirtual unidades
+            </p>
+        </div>
+        <a asp-action="Criar" asp-route-artigoId="@artigo?.Id" class="btn btn-cvp">
+            <i class="bi bi-plus-lg me-1"></i> Novo Lote
+        </a>
+    </div>
+</div>
+
+<div class="card p-0 overflow-hidden shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Nº Lote</th>
+                    <th class="text-center">Validade</th>
+                    <th class="text-center">Disponível</th>
+                    <th class="text-center">Reservado</th>
+                    <th>Localização</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-end pe-3">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-box-seam" style="font-size: 2rem;"></i>
+                            <p class="mb-0 mt-2">Nenhum lote encontrado para este artigo.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var lote in Model)
+                    {
+                        var rowClass = !lote.Ativo ? "table-secondary" :
+                                       lote.EstaExpirado ? "table-danger" :
+                                       lote.ValidadeProxima ? "table-warning" : "";
+
+                        <tr class="@rowClass">
+                            <td class="ps-3">
+                                <span class="badge bg-light text-dark border fw-bold">@lote.NumeroLote</span>
+                            </td>
+                            <td class="text-center">
+                                @if (lote.EstaExpirado)
+                                {
+                                    <span class="badge bg-danger">EXPIRADO</span>
+                                }
+                                else if (lote.ValidadeProxima)
+                                {
+                                    <span class="badge bg-warning text-dark">ATENÇÃO</span>
+                                }
+                                else
+                                {
+                                    <span class="text-success"><i class="bi bi-check-circle"></i></span>
+                                }
+                                <br />
+                                <small>@lote.DataValidade.ToString("dd/MM/yyyy")</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold">@lote.QtdRealmenteDisponivel</span>
+                                <small class="text-muted">/ @lote.QtdDisponivel</small>
+                            </td>
+                            <td class="text-center">
+                                @if (lote.QtdReservada > 0)
+                                {
+                                    <span class="badge bg-info">@lote.QtdReservada</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="small text-muted">
+                                @if (!string.IsNullOrEmpty(lote.LocalizacaoLabel))
+                                {
+                                    <i class="bi bi-geo-alt me-1"></i>@lote.LocalizacaoLabel
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (lote.Ativo)
+                                {
+                                    <span class="badge bg-success">Ativo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inativo</span>
+                                }
+                            </td>
+                            <td class="text-end pe-3">
+                                <a asp-action="Detalhes" asp-route-id="@lote.Id"
+                                   class="btn btn-sm btn-outline-info py-1 px-2 border-0" title="Ver Detalhes">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

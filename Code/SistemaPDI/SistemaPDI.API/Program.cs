@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -12,24 +12,28 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database
+// ── DbContext ────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<PdiDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Dependency Injection - Repositories
-builder.Services.AddScoped<IArtigoRepository, ArtigoRepository>();
+// ── Repositórios ─────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IUtilizadorRepository, UtilizadorRepository>();
+builder.Services.AddScoped<IArtigoRepository, ArtigoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
+builder.Services.AddScoped<ILoteRepository, LoteRepository>();  // ← NOVO
+builder.Services.AddScoped<ILocalizacaoRepository, LocalizacaoRepository>();
 
-// Dependency Injection - Services
-builder.Services.AddScoped<IArtigoService, ArtigoService>();
+// ── Serviços ─────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUtilizadorService, UtilizadorService>();
+builder.Services.AddScoped<IArtigoService, ArtigoService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IFornecedorService, FornecedorService>();
+builder.Services.AddScoped<ILoteService, LoteService>();  // ← NOVO
+builder.Services.AddScoped<ILocalizacaoService, LocalizacaoService>();
 
-// JWT Authentication
+// ── JWT Authentication ─────────────────────────────────────────────────────────
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -55,7 +59,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Sistema PDI API",
         Version = "v1",
-        Description = "CVP Ribeir�o - Gest�o de Stock"
+        Description = "CVP Ribeirão - Gestão de Stock"
     });
 
     // Configurar JWT no Swagger
@@ -66,7 +70,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Insira 'Bearer' [espa�o] e depois o seu token JWT"
+        Description = "Insira 'Bearer' [espaço] e depois o seu token JWT"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement

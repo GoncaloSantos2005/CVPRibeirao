@@ -426,6 +426,349 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "ObterTodos",
+    "RelativePath": "api/Localizacoes",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "incluirInativos",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "Criar",
+    "RelativePath": "api/Localizacoes",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.CriarLocalizacaoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "ObterPorId",
+    "RelativePath": "api/Localizacoes/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "Atualizar",
+    "RelativePath": "api/Localizacoes/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.AtualizarLocalizacaoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "Apagar",
+    "RelativePath": "api/Localizacoes/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "AlternarEstado",
+    "RelativePath": "api/Localizacoes/{id}/toggle-ativo",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "ObterAtivas",
+    "RelativePath": "api/Localizacoes/ativas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "ObterParaDropdown",
+    "RelativePath": "api/Localizacoes/dropdown",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "ObterPorTipo",
+    "RelativePath": "api/Localizacoes/tipo/{tipo}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "tipo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.Api.Controllers.LocalizacoesController",
+    "Method": "ObterPorZona",
+    "RelativePath": "api/Localizacoes/zona/{zona}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "zona",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "GetAll",
+    "RelativePath": "api/Lotes",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "Criar",
+    "RelativePath": "api/Lotes",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.CriarLoteDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "GetById",
+    "RelativePath": "api/Lotes/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "Atualizar",
+    "RelativePath": "api/Lotes/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.AtualizarLoteDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "Desativar",
+    "RelativePath": "api/Lotes/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "ConfirmarSaida",
+    "RelativePath": "api/Lotes/{loteId}/confirmar-saida",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "loteId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "SistemaPDI.API.Controllers.ConfirmarSaidaRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "GetAlertasValidade",
+    "RelativePath": "api/Lotes/alertas-validade",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dias",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "GetByArtigo",
+    "RelativePath": "api/Lotes/artigo/{artigoId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "artigoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "LibertarReserva",
+    "RelativePath": "api/Lotes/libertar-reserva",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.LibertarReservaDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "LibertarReservasExpiradas",
+    "RelativePath": "api/Lotes/libertar-reservas-expiradas",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "ReservarStock",
+    "RelativePath": "api/Lotes/reservar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.ReservaStockDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
+    "Method": "GetStockDisponivel",
+    "RelativePath": "api/Lotes/stock-disponivel/{artigoId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "artigoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "SistemaPDI.API.Controllers.UtilizadoresController",
     "Method": "GetAll",
     "RelativePath": "api/Utilizadores",

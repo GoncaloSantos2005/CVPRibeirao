@@ -327,3 +327,16 @@ C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\obj\Debug\net8.0\r
 C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\obj\Debug\net8.0\SistemaPDI.API.pdb
 C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\obj\Debug\net8.0\SistemaPDI.API.genruntimeconfig.cache
 C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\obj\Debug\net8.0\ref\SistemaPDI.API.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.Configuration.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.Configuration.EnvironmentVariables.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.Configuration.FileExtensions.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Json.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Physical.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.FileSystemGlobbing.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\System.IO.Pipelines.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\System.Text.Encodings.Web.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\System.Text.Json.dll
+C:\Users\gonca\source\CVP-temp\Code\SistemaPDI\SistemaPDI.API\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
