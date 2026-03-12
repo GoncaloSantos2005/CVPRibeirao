@@ -52,6 +52,34 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Encomendas/AprovarPreencher.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5jb21lbmRhc1xBcHJvdmFyUHJlZW5jaGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Encomendas/CriarLista.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5jb21lbmRhc1xDcmlhckxpc3RhLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Encomendas/Detalhes.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5jb21lbmRhc1xEZXRhbGhlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Encomendas/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5jb21lbmRhc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Encomendas/RegistarRececao.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5jb21lbmRhc1xSZWdpc3RhclJlY2VjYW8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Encomendas/RegistarRecepcao.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5jb21lbmRhc1xSZWdpc3RhclJlY2VwY2FvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Encomendas/SubmeterOrcamento.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5jb21lbmRhc1xTdWJtZXRlck9yY2FtZW50by5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Fornecedores/Criar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRm9ybmVjZWRvcmVzXENyaWFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -68,6 +96,18 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRm9ybmVjZWRvcmVzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/HistoricosPrecos/Artigo.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGlzdG9yaWNvc1ByZWNvc1xBcnRpZ28uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/HistoricosPrecos/Comparar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGlzdG9yaWNvc1ByZWNvc1xDb21wYXJhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/HistoricosPrecos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGlzdG9yaWNvc1ByZWNvc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Localizacoes/Criar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemFjb2VzXENyaWFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -78,10 +118,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Localizacoes/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemFjb2VzXEluZGV4LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Lotes/AlertasValidade.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG90ZXNcQWxlcnRhc1ZhbGlkYWRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/gonca/source/CVP-temp/Code/SistemaPDI/SistemaPDI.Web/Views/Lotes/Criar.cshtml]

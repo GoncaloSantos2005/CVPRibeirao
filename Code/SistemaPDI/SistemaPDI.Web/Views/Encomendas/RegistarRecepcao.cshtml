@@ -1,0 +1,699 @@
+﻿@using SistemaPDI.Web.Models
+@model RegistarRececaoViewModel
+@{
+    ViewData["Title"] = "Registar Receção";
+    var encomenda = ViewBag.Encomenda as EncomendaDto;
+    var localizacoes = ViewBag.Localizacoes as List<LocalizacaoDto> ?? new List<LocalizacaoDto>();
+}
+
+<div class="container-fluid py-4">
+
+    @* ══════════════════════════════════════════════════════════════════════ *@
+    @* HEADER *@
+    @* ══════════════════════════════════════════════════════════════════════ *@
+
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <i class="bi bi-box-arrow-in-down"></i>
+                Registar Receção de Material
+            </h2>
+            <p class="text-muted">
+                Confira artigo por artigo, valide lotes e atualize stocks
+            </p>
+        </div>
+    </div>
+
+    @* ══════════════════════════════════════════════════════════════════════ *@
+    @* INFORMAÇÕES DA ENCOMENDA *@
+    @* ══════════════════════════════════════════════════════════════════════ *@
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Encomenda @encomenda.NumeroEncomenda
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-6">Fornecedor:</dt>
+                        <dd class="col-sm-6"><strong>@encomenda.FornecedorNome</strong></dd>
+
+                        <dt class="col-sm-6">Enviada em:</dt>
+                        <dd class="col-sm-6">
+                            @if (encomenda.DataEnvioFornecedor.HasValue)
+                            {
+                                <text>@encomenda.DataEnvioFornecedor.Value.ToString("dd/MM/yyyy")</text>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-6">Entrega prevista:</dt>
+                        <dd class="col-sm-6">
+                            @if (encomenda.DataEntregaPrevista.HasValue)
+                            {
+                                var diasAtraso = (DateTime.Today - encomenda.DataEntregaPrevista.Value).Days;
+                                <span class="@(diasAtraso > 0 ? "text-danger" : "")">
+                                    @encomenda.DataEntregaPrevista.Value.ToString("dd/MM/yyyy")
+                                </span>
+                                @if (diasAtraso > 0)
+                                {
+                                    <br>
+                            
+                                    <span class="badge bg-danger">@diasAtraso dia(s) de atraso</span>
+                                }
+                            }
+                        </dd>
+
+                        <dt class="col-sm-6">Valor Total:</dt>
+                        <dd class="col-sm-6"><strong>@encomenda.ValorTotal.ToString("C2")</strong></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up"></i>
+                        Progresso da Receção
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-6">Total Aprovado:</dt>
+                        <dd class="col-sm-6"><strong>@encomenda.TotalArtigosAprovados</strong> un.</dd>
+
+                        <dt class="col-sm-6">Já Recebido:</dt>
+                        <dd class="col-sm-6">
+                            <span class="text-success"><strong>@encomenda.TotalArtigosRecebidos</strong> un.</span>
+                        </dd>
+
+                        <dt class="col-sm-6">Pendente:</dt>
+                        <dd class="col-sm-6">
+                            <span class="text-warning">
+                                <strong>@(encomenda.TotalArtigosAprovados - encomenda.TotalArtigosRecebidos)</strong> un.
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-12 mt-2">
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-success"
+                                     role="progressbar"
+                                     style="width: @encomenda.PercentualRecebido%; font-size: 14px;"
+                                     aria-valuenow="@encomenda.PercentualRecebido"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                    @encomenda.PercentualRecebido.ToString("F1")%
+                                </div>
+                            </div>
+                        </dt>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Instruções
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0 small">
+                        <li>Confira <strong>fisicamente</strong> cada artigo</li>
+                        <li>Valide <strong>quantidade recebida</strong></li>
+                        <li>Registe <strong>número de lote</strong></li>
+                        <li>Verifique <strong>data de validade</strong></li>
+                        <li>Defina <strong>localização</strong> de armazenamento</li>
+                        <li>Registe <strong>diferenças/danos</strong> em observações</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ══════════════════════════════════════════════════════════════════════ *@
+    @* FORMULÁRIO DE RECEÇÃO - ARTIGO POR ARTIGO *@
+    @* ══════════════════════════════════════════════════════════════════════ *@
+
+    <form asp-action="RegistarRececao" method="post" id="formRecepcao">
+        <input type="hidden" name="EncomendaId" value="@encomenda.Id" />
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-check2-square"></i>
+                            Conferência de Artigos
+                        </h5>
+                        <div>
+                            <span class="badge bg-light text-dark">
+                                <i class="bi bi-box-seam"></i>
+                                <span id="artigosConferidos">0</span> / @encomenda.Linhas.Count conferidos
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+
+                        @* LISTA DE ARTIGOS - ACCORDION *@
+                        <div class="accordion" id="accordionArtigos">
+                            @for (int i = 0; i < encomenda.Linhas.Count; i++)
+                            {
+                                var linha = encomenda.Linhas[i];
+                                var qtdPendente = linha.QuantidadeAprovada - linha.QuantidadeRecebida;
+                                var jaRecebido = linha.QuantidadeRecebida > 0;
+                                var completamenteRecebido = linha.QuantidadeRecebida >= linha.QuantidadeAprovada;
+
+                                var corCard = completamenteRecebido ? "success" :
+                                jaRecebido ? "warning" :
+                                "secondary";
+
+                                var iconCard = completamenteRecebido ? "check-circle-fill" :
+                                jaRecebido ? "hourglass-split" :
+                                "circle";
+
+                                <div class="accordion-item artigo-item border-@corCard" data-index="@i" data-pendente="@qtdPendente">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button @(i == 0 ? "" : "collapsed") bg-light"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#artigo@(i)"
+                                                aria-expanded="@(i == 0 ? "true" : "false")">
+                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                <div>
+                                                    <i class="bi bi-@iconCard text-@corCard me-2"></i>
+                                                    <strong>@linha.ArtigoNome</strong>
+                                                    <span class="badge bg-secondary ms-2">@linha.ArtigoSKU</span>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-primary me-2">
+                                                        Aprovado: @linha.QuantidadeAprovada
+                                                    </span>
+                                                    @if (jaRecebido)
+                                                    {
+                                                        <span class="badge bg-success me-2">
+                                                            Recebido: @linha.QuantidadeRecebida
+                                                        </span>
+                                                    }
+                                                    @if (qtdPendente > 0)
+                                                    {
+                                                        <span class="badge bg-warning text-dark">
+                                                            Pendente: @qtdPendente
+                                                        </span>
+                                                    }
+                                                    else if (completamenteRecebido)
+                                                    {
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-check-lg"></i> Completo
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="artigo@(i)"
+                                         class="accordion-collapse collapse @(i == 0 ? "show" : "")"
+                                         data-bs-parent="#accordionArtigos">
+                                        <div class="accordion-body">
+                                            <input type="hidden" name="Linhas[@i].LinhaId" value="@linha.Id" />
+
+                                            <div class="row">
+                                                @* INFORMAÇÕES DO ARTIGO *@
+                                                <div class="col-md-12 mb-3">
+                                                    <div class="alert alert-info mb-3">
+                                                        <div class="row">
+                                                            <div class="col-md-3">
+                                                                <small class="text-muted">Preço Unitário:</small>
+                                                                <div><strong>@linha.PrecoUnitario?.ToString("C2")</strong></div>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <small class="text-muted">Subtotal Aprovado:</small>
+                                                                <div><strong>@linha.Subtotal?.ToString("C2")</strong></div>
+                                                            </div>
+                                                            @if (!string.IsNullOrEmpty(linha.NumeroLote))
+                                                            {
+                                                                <div class="col-md-3">
+                                                                    <small class="text-muted">Lote Previsto:</small>
+                                                                    <div><span class="badge bg-info">@linha.NumeroLote</span></div>
+                                                                </div>
+                                                            }
+                                                            @if (linha.DataValidade.HasValue)
+                                                            {
+                                                                <div class="col-md-3">
+                                                                    <small class="text-muted">Validade Prevista:</small>
+                                                                    <div><strong>@linha.DataValidade.Value.ToString("dd/MM/yyyy")</strong></div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                @* FORMULÁRIO DE RECEÇÃO *@
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">
+                                                            <i class="bi bi-hash"></i> Quantidade Recebida *
+                                                        </label>
+                                                        <input type="number"
+                                                               name="Linhas[@i].QuantidadeRecebida"
+                                                               class="form-control form-control-lg text-center input-qtd-recebida"
+                                                               min="0"
+                                                               max="@qtdPendente"
+                                                               value="@qtdPendente"
+                                                               required
+                                                               data-max="@qtdPendente"
+                                                               data-artigo="@linha.ArtigoNome" />
+                                                        <small class="text-muted">
+                                                            Máximo: <strong>@qtdPendente</strong> un.
+                                                        </small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">
+                                                            <i class="bi bi-upc"></i> Número de Lote *
+                                                        </label>
+                                                        <input type="text"
+                                                               name="Linhas[@i].NumeroLote"
+                                                               class="form-control form-control-lg input-lote"
+                                                               placeholder="Ex: L-2026-001"
+                                                               maxlength="100"
+                                                               value="@linha.NumeroLote"
+                                                               required />
+                                                        <small class="text-muted">Conforme embalagem</small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">
+                                                            <i class="bi bi-calendar-x"></i> Data Validade *
+                                                        </label>
+                                                        <input type="date"
+                                                               name="Linhas[@i].DataValidade"
+                                                               class="form-control form-control-lg input-validade"
+                                                               value="@(linha.DataValidade?.ToString("yyyy-MM-dd"))"
+                                                               required />
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">
+                                                            <i class="bi bi-geo-alt"></i> Localização *
+                                                        </label>
+                                                        <select name="Linhas[@i].LocalizacaoId"
+                                                                class="form-select form-select-lg"
+                                                                required>
+                                                            <option value="">-- Selecione --</option>
+                                                            @foreach (var loc in localizacoes.Where(l => l.Ativo).OrderBy(l => l.Codigo))
+                                                            {
+                                                                var selected = linha.LocalizacaoId == loc.Id ? "selected" : "";
+                                                                <option value="@loc.Id" selected>
+                                                                    @loc.Codigo - @loc.Label
+                                                                </option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                @* OBSERVAÇÕES / DIFERENÇAS *@
+                                                <div class="col-md-12">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">
+                                                            <i class="bi bi-chat-left-text"></i>
+                                                            Observações / Diferenças / Danos
+                                                        </label>
+                                                        <textarea name="Linhas[@i].Observacoes"
+                                                              class="form-control"
+                                                              rows="2"
+                                                              placeholder="Ex: Embalagem danificada, quantidade divergente, produto com defeito..."></textarea>
+                                                        <small class="text-muted">
+                                                            Registe qualquer anomalia identificada na conferência física
+                                                        </small>
+                                                    </div>
+                                                </div>
+
+                                                @* ALERTAS DE VALIDAÇÃO *@
+                                                <div class="col-md-12">
+                                                    <div class="alert alert-warning alert-validacao-validade d-none">
+                                                        <i class="bi bi-exclamation-triangle"></i>
+                                                        <strong>Atenção!</strong> <span class="mensagem-validade"></span>
+                                                    </div>
+                                                </div>
+
+                                                @* CHECKBOX DE CONFIRMAÇÃO *@
+                                                <div class="col-md-12">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input checkbox-conferido"
+                                                                       type="checkbox"
+                                                                       id="check@(i)"
+                                                                       data-index="@i"
+                                                                       required>
+                                                                <label class="form-check-label" for="check@(i)">
+                                                                    <strong>Confirmo que conferi fisicamente este artigo e todos os dados estão corretos</strong>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ══════════════════════════════════════════════════════════════════════ *@
+        @* OBSERVAÇÕES GERAIS DA RECEÇÃO *@
+        @* ══════════════════════════════════════════════════════════════════════ *@
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-check"></i>
+                            Observações Gerais da Receção
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Observacoes" class="form-label">
+                                Notas sobre a receção (opcional)
+                            </label>
+                            <textarea asp-for="Observacoes"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Ex: Entrega realizada no período da manhã, transportadora XYZ, condutor João Silva..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ══════════════════════════════════════════════════════════════════════ *@
+        @* RESUMO FINAL *@
+        @* ══════════════════════════════════════════════════════════════════════ *@
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-data"></i>
+                            Resumo da Receção
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <h6 class="text-muted">Total de Artigos</h6>
+                                <h3>@encomenda.Linhas.Count</h3>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 class="text-muted">Unidades a Recepcionar</h6>
+                                <h3 id="resumoUnidadesRecepcionar" class="text-primary">0</h3>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 class="text-muted">Após Receção</h6>
+                                <h3 id="resumoTotalAposRecepcao">@encomenda.TotalArtigosRecebidos</h3>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 class="text-muted">Ainda Pendente</h6>
+                                <h3 id="resumoPendente" class="text-warning">@(encomenda.TotalArtigosAprovados - encomenda.TotalArtigosRecebidos)</h3>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div id="alertDiferenca" class="alert alert-warning d-none">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Atenção!</strong> <span id="mensagemDiferenca"></span>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="checkFinal1" required>
+                            <label class="form-check-label" for="checkFinal1">
+                                Conferi fisicamente todos os artigos registados acima
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="checkFinal2" required>
+                            <label class="form-check-label" for="checkFinal2">
+                                Validei todos os lotes e datas de validade
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkFinal3" required>
+                            <label class="form-check-label" for="checkFinal3">
+                                Defini as localizações de armazenamento corretamente
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        @* ══════════════════════════════════════════════════════════════════════ *@
+        @* BOTÕES FINAIS *@
+        @* ══════════════════════════════════════════════════════════════════════ *@
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="Detalhes" asp-route-id="@encomenda.Id" class="btn btn-secondary btn-lg">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-success btn-lg" id="btnRegistar" disabled>
+                <i class="bi bi-check-circle"></i> Registar Receção e Atualizar Stocks
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function() {
+            const totalLinhas = @encomenda.Linhas.Count;
+            const totalJaRecebido = @encomenda.TotalArtigosRecebidos;
+
+            // ═══════════════════════════════════════════════════════════════════
+            // VALIDAR QUANTIDADE RECEBIDA
+            // ═══════════════════════════════════════════════════════════════════
+            $('.input-qtd-recebida').on('input', function() {
+                const max = parseInt($(this).data('max'));
+                const valor = parseInt($(this).val()) || 0;
+                const artigo = $(this).data('artigo');
+
+                if (valor > max) {
+                    alert(`Quantidade recebida de "${artigo}" não pode ser maior que ${max}!`);
+                    $(this).val(max);
+                }
+
+                if (valor < 0) {
+                    $(this).val(0);
+                }
+
+                atualizarResumo();
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // VALIDAR DATA DE VALIDADE
+            // ═══════════════════════════════════════════════════════════════════
+            $('.input-validade').on('change', function() {
+                const $item = $(this).closest('.artigo-item');
+                const $alert = $item.find('.alert-validacao-validade');
+                const $mensagem = $item.find('.mensagem-validade');
+
+                const dataValidade = new Date($(this).val());
+                const hoje = new Date();
+                const diasAteValidade = Math.floor((dataValidade - hoje) / (1000 * 60 * 60 * 24));
+
+                $alert.addClass('d-none');
+
+                if (diasAteValidade < 0) {
+                    $mensagem.text('Produto JÁ VENCIDO! Não deve ser aceite.');
+                    $alert.removeClass('d-none alert-warning').addClass('alert-danger');
+                } else if (diasAteValidade < 30) {
+                    $mensagem.text(`Produto vence em ${diasAteValidade} dias. Prazo muito curto!`);
+                    $alert.removeClass('d-none alert-warning').addClass('alert-danger');
+                } else if (diasAteValidade < 90) {
+                    $mensagem.text(`Produto vence em ${diasAteValidade} dias. Atenção ao prazo!`);
+                    $alert.removeClass('d-none alert-danger').addClass('alert-warning');
+                }
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // CONTADOR DE ARTIGOS CONFERIDOS
+            // ═══════════════════════════════════════════════════════════════════
+            $('.checkbox-conferido').on('change', function() {
+                const totalConferidos = $('.checkbox-conferido:checked').length;
+                $('#artigosConferidos').text(totalConferidos);
+
+                // Atualizar cor do card
+                const index = $(this).data('index');
+                const $item = $(this).closest('.artigo-item');
+
+                if ($(this).is(':checked')) {
+                    $item.removeClass('border-secondary border-warning')
+                         .addClass('border-success');
+                    $item.find('.accordion-button i').first()
+                         .removeClass('bi-circle bi-hourglass-split')
+                         .addClass('bi-check-circle-fill text-success');
+                } else {
+                    $item.removeClass('border-success')
+                         .addClass('border-secondary');
+                    $item.find('.accordion-button i').first()
+                         .removeClass('bi-check-circle-fill text-success')
+                         .addClass('bi-circle');
+                }
+
+                validarFormulario();
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // ATUALIZAR RESUMO
+            // ═══════════════════════════════════════════════════════════════════
+            function atualizarResumo() {
+                let totalRecepcionar = 0;
+
+                $('.input-qtd-recebida').each(function() {
+                    totalRecepcionar += parseInt($(this).val()) || 0;
+                });
+
+                const totalApos = totalJaRecebido + totalRecepcionar;
+                const totalAprovado = @encomenda.TotalArtigosAprovados;
+                const pendente = totalAprovado - totalApos;
+
+                $('#resumoUnidadesRecepcionar').text(totalRecepcionar);
+                $('#resumoTotalAposRecepcao').text(totalApos);
+                $('#resumoPendente').text(pendente);
+
+                // Alerta se houver diferença
+                if (pendente > 0) {
+                    $('#mensagemDiferenca').text(`Após esta receção ainda faltarão ${pendente} unidades. A encomenda ficará com estado PARCIAL.`);
+                    $('#alertDiferenca').removeClass('d-none alert-success').addClass('alert-warning');
+                } else if (pendente === 0) {
+                    $('#mensagemDiferenca').text('Esta receção completará a encomenda! Estado mudará para CONCLUÍDA.');
+                    $('#alertDiferenca').removeClass('d-none alert-warning').addClass('alert-success');
+                } else {
+                    $('#mensagemDiferenca').text(`Atenção! Está a recepcionar ${Math.abs(pendente)} unidades A MAIS do que o aprovado!`);
+                    $('#alertDiferenca').removeClass('d-none alert-success').addClass('alert-danger');
+                }
+
+                validarFormulario();
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // VALIDAR FORMULÁRIO
+            // ═══════════════════════════════════════════════════════════════════
+            function validarFormulario() {
+                const todosConferidos = $('.checkbox-conferido:checked').length === totalLinhas;
+                const check1 = $('#checkFinal1').is(':checked');
+                const check2 = $('#checkFinal2').is(':checked');
+                const check3 = $('#checkFinal3').is(':checked');
+
+                // Verificar se tem pelo menos 1 artigo com quantidade > 0
+                let temRecepcao = false;
+                $('.input-qtd-recebida').each(function() {
+                    if (parseInt($(this).val()) > 0) {
+                        temRecepcao = true;
+                    }
+                });
+
+                const valido = todosConferidos && check1 && check2 && check3 && temRecepcao;
+
+                $('#btnRegistar').prop('disabled', !valido);
+            }
+
+            // Validar ao mudar checkboxes finais
+            $('#checkFinal1, #checkFinal2, #checkFinal3').on('change', validarFormulario);
+
+            // ═══════════════════════════════════════════════════════════════════
+            // CONFIRMAÇÃO ANTES DE SUBMETER
+            // ═══════════════════════════════════════════════════════════════════
+            $('#formRecepcao').submit(function(e) {
+                let totalRecepcionar = 0;
+                $('.input-qtd-recebida').each(function() {
+                    totalRecepcionar += parseInt($(this).val()) || 0;
+                });
+
+                const totalApos = totalJaRecebido + totalRecepcionar;
+                const totalAprovado = @encomenda.TotalArtigosAprovados;
+                const estadoFinal = totalApos >= totalAprovado ? 'CONCLUÍDA' : 'PARCIAL';
+
+                const confirmar = confirm(
+                    `Confirmar receção?\n\n` +
+                    `Unidades a recepcionar: ${totalRecepcionar}\n` +
+                    `Total após receção: ${totalApos} / ${totalAprovado}\n\n` +
+                    `Os stocks serão atualizados automaticamente.\n` +
+                    `Estado final: ${estadoFinal}\n\n` +
+                    `Deseja continuar?`
+                );
+
+                if (!confirmar) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                $('#btnRegistar')
+                    .prop('disabled', true)
+                    .html('<span class="spinner-border spinner-border-sm me-2"></span>A processar...');
+
+                return true;
+            });
+
+            // Inicializar
+            atualizarResumo();
+        });
+    </script>
+
+    <style>
+        .accordion-button:not(.collapsed) {
+            background-color: #e7f3ff;
+            color: #000;
+        }
+
+        .artigo-item {
+            transition: border-color 0.3s;
+        }
+
+        .checkbox-conferido:checked + label {
+            font-weight: bold;
+            color: #198754;
+        }
+
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        .input-qtd-recebida {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .input-lote {
+            font-family: monospace;
+            font-weight: bold;
+        }
+    </style>
+}

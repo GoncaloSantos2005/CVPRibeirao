@@ -1,5 +1,8 @@
 ﻿using SistemaPDI.Contracts.DTOs;
+using SistemaPDI.Domain.Entities;
 using SistemaPDI.Web.Models;
+using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
@@ -445,16 +448,6 @@ namespace SistemaPDI.Web.Services
             return ApiResult<List<LoteDto>>.Ok(dados);
         }
 
-        public async Task<ApiResult<List<AlertaValidadeDto>>> ObterAlertasValidadeAsync(int dias = 15)
-        {
-            var response = await _httpClient.GetAsync($"api/lotes/alertas-validade?dias={dias}");
-            if (!response.IsSuccessStatusCode)
-                return ApiResult<List<AlertaValidadeDto>>.Falhou(await LerErroAsync(response));
-
-            var dados = await DeserializarAsync<List<AlertaValidadeDto>>(response) ?? new();
-            return ApiResult<List<AlertaValidadeDto>>.Ok(dados);
-        }
-
         public async Task<ApiResult<LoteDto>> CriarLoteAsync(CriarLoteDto dto)
         {
             var response = await _httpClient.PostAsync("api/lotes", Serializar(dto));
@@ -610,6 +603,283 @@ namespace SistemaPDI.Web.Services
                 return ApiResult.Falhou(await LerErroAsync(response));
 
             return ApiResult.Ok();
+        }
+        #endregion
+
+        #region Encomendas
+        // ══════════════════════════════════════════════════════════════════════
+        // ENCOMENDAS
+        // ══════════════════════════════════════════════════════════════════════
+
+        public async Task<ApiResult<List<EncomendaDto>>> ObterEncomendasAsync(bool incluirInativos = false)
+        {
+            var url = incluirInativos ? "api/encomendas?incluirInativos=true" : "api/encomendas";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<EncomendaDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<EncomendaDto>>(response) ?? new();
+            return ApiResult<List<EncomendaDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<EncomendaDto>> ObterEncomendaPorIdAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"api/encomendas/{id}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<EncomendaDto>>> ObterEncomendaPorEstadoAsync(string estado)
+        {
+            var response = await _httpClient.GetAsync($"api/encomendas/estado/{estado}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<EncomendaDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<EncomendaDto>>(response) ?? new();
+            return ApiResult<List<EncomendaDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<List<EncomendaDto>>> ObterMinhasEncomendasAsync()
+        {
+            var response = await _httpClient.GetAsync("api/encomendas/minhas");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<EncomendaDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<EncomendaDto>>(response) ?? new();
+            return ApiResult<List<EncomendaDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<List<EncomendaDto>>> ObterPendentesAprovacaoAsync()
+        {
+            var response = await _httpClient.GetAsync("api/encomendas/pendentes-aprovacao");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<EncomendaDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<EncomendaDto>>(response) ?? new();
+            return ApiResult<List<EncomendaDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<List<EncomendaDto>>> ObterEncomendasEnviadasAsync()
+        {
+            var response = await _httpClient.GetAsync("api/encomendas/enviadas");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<EncomendaDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<EncomendaDto>>(response) ?? new();
+            return ApiResult<List<EncomendaDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<EncomendaDto>> CriarListaAsync(CriarListaDto dto)
+        {
+            var response = await _httpClient.PostAsync("api/encomendas/lista", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<EncomendaDto>> AtualizarListaAsync(int id, CriarListaDto dto)
+        {
+            var response = await _httpClient.PutAsync($"api/encomendas/{id}/lista", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<byte[]>> GerarPdfAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"api/encomendas/{id}/gerar-pdf");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<byte[]>.Falhou(await LerErroAsync(response));
+
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            return ApiResult<byte[]>.Ok(bytes);
+        }
+
+        public async Task<ApiResult<EncomendaDto>> MarcarComoRascunhoAsync(int id)
+        {
+            var response = await _httpClient.PostAsync($"api/encomendas/{id}/marcar-rascunho", null);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+        public async Task<ApiResult<EncomendaDto>> SubmeterOrcamentoAsync(int id, SubmeterOrcamentoDto dto)
+        {
+            var response = await _httpClient.PostAsync(
+                $"api/encomendas/{id}/submeter-orcamento",
+                Serializar(dto)
+            );
+
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<EncomendaDto>> RejeitarEncomendaAsync(int id, string motivo)
+        {
+            var response = await _httpClient.PostAsync($"api/encomendas/{id}/rejeitar", Serializar(new { Motivo = motivo }));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<EncomendaDto>> AprovarEPreencherAsync(int id, AprovarEPreencherDto dto)
+        {
+            var response = await _httpClient.PostAsync($"api/encomendas/{id}/aprovar-preencher", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<EncomendaDto>> ConfirmarEEnviarAsync(int id)
+        {
+            var response = await _httpClient.PostAsync($"api/encomendas/{id}/confirmar-enviar", null);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<EncomendaDto>> RegistarRecepcaoAsync(RegistarRecepcaoDto dto)
+        {
+            var response = await _httpClient.PostAsync("api/encomendas/registar-recepcao", Serializar(dto));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EncomendaDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<EncomendaDto>(response);
+            return ApiResult<EncomendaDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult> CancelarEncomendaAsync(int id, string motivo)
+        {
+            var response = await _httpClient.PostAsync($"api/encomendas/{id}/cancelar", Serializar(new { Motivo = motivo }));
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+
+        public async Task<ApiResult> ToggleAtivoEncomendaAsync(int id)
+        {
+            var response = await _httpClient.PatchAsync($"api/encomendas/{id}/toggle-ativo", null);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult.Falhou(await LerErroAsync(response));
+
+            return ApiResult.Ok();
+        }
+        #endregion
+
+        #region HistoricoPrecos
+        // ══════════════════════════════════════════════════════════════════════
+        // HISTÓRICO DE PREÇOS
+        // ══════════════════════════════════════════════════════════════════════
+
+        public async Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPrecosAsync()
+        {
+            var response = await _httpClient.GetAsync($"/api/historicosprecos");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<HistoricoPrecoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<HistoricoPrecoDto>>(response) ?? new();
+            return ApiResult<List<HistoricoPrecoDto>>.Ok(dados);
+        }
+
+        public async Task<ApiResult<HistoricoPrecoDto>> ObterHistoricoPrecoPorIdAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"/api/historicosprecos/{id}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<HistoricoPrecoDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<HistoricoPrecoDto>(response);
+            return ApiResult<HistoricoPrecoDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPorArtigoAsync(int artigoId)
+        {
+            var response = await _httpClient.GetAsync($"/api/historicosprecos/artigo/{artigoId}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<HistoricoPrecoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<HistoricoPrecoDto>>(response);
+            return ApiResult<List<HistoricoPrecoDto>>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPorFornecedorAsync(int fornecedorId)
+        {
+            var response = await _httpClient.GetAsync($"/api/historicosprecos/fornecedor/{fornecedorId}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<HistoricoPrecoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<HistoricoPrecoDto>>(response);
+            return ApiResult<List<HistoricoPrecoDto>>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPorEncomendaAsync(int encomendaId)
+        {
+            var response = await _httpClient.GetAsync($"/api/historicosprecos/encomenda/{encomendaId}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<HistoricoPrecoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<HistoricoPrecoDto>>(response);
+            return ApiResult<List<HistoricoPrecoDto>>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPorPeriodoAsync(DateTime dataInicio, DateTime dataFim)
+        {
+            var url = $"/api/historicosprecos/periodo?dataInicio={dataInicio:yyyy-MM-dd}&dataFim={dataFim:yyyy-MM-dd}";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<HistoricoPrecoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<HistoricoPrecoDto>>(response);
+            return ApiResult<List<HistoricoPrecoDto>>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<EvolucaoPrecoDto>>> ObterEvolucaoPrecosAsync(int artigoId)
+        {
+            var response = await _httpClient.GetAsync($"/api/historicosprecos/evolucao/{artigoId}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<EvolucaoPrecoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<EvolucaoPrecoDto>>(response);
+            return ApiResult<List<EvolucaoPrecoDto>>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<ComparacaoFornecedorDto>> CompararFornecedoresAsync(int artigoId)
+        {
+            var response = await _httpClient.GetAsync($"/api/historicosprecos/comparar-fornecedores/{artigoId}");
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<ComparacaoFornecedorDto>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<ComparacaoFornecedorDto>(response);
+            return ApiResult<ComparacaoFornecedorDto>.Ok(dados!);
+        }
+
+        public async Task<ApiResult<List<SugestaoPrecoDto>>> ObterSugestoesPrecosAsync(List<int> artigosIds, int? fornecedorId = null)
+        {
+            var request = new { ArtigosIds = artigosIds, FornecedorId = fornecedorId };
+            var content = Serializar(request);
+            var response = await _httpClient.PostAsync("/api/historicosprecos/sugestoes", content);
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<List<SugestaoPrecoDto>>.Falhou(await LerErroAsync(response));
+
+            var dados = await DeserializarAsync<List<SugestaoPrecoDto>>(response);
+            return ApiResult<List<SugestaoPrecoDto>>.Ok(dados!);
         }
         #endregion
     }

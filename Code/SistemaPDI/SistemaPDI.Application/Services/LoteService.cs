@@ -63,28 +63,6 @@ namespace SistemaPDI.Application.Services
             return Result<List<LoteDto>>.Ok(dtos);
         }
 
-        /// <summary>
-        /// Obtém lotes com validade próxima ou expirados (RN13).
-        /// </summary>
-        public async Task<Result<List<AlertaValidadeDto>>> ObterAlertasValidadeAsync(int diasAlerta = 15)
-        {
-            var lotes = await _loteRepository.ObterLotesComValidadeProximaAsync(diasAlerta);
-
-            var alertas = lotes.Select(l => new AlertaValidadeDto(
-                l.Id,
-                l.ArtigoId,
-                l.Artigo.Nome,
-                l.NumeroLote,
-                l.DataValidade,
-                (l.DataValidade.Date - DateTime.UtcNow.Date).Days,
-                l.QtdDisponivel,
-                FormatarLocalizacao(l.Localizacao),
-                l.EstaExpirado
-            )).ToList();
-
-            return Result<List<AlertaValidadeDto>>.Ok(alertas);
-        }
-
         // ══════════════════════════════════════════════════════════════════════
         // ESCRITA
         // ══════════════════════════════════════════════════════════════════════
@@ -133,7 +111,6 @@ namespace SistemaPDI.Application.Services
 
             // Atualizar stock do artigo
             artigo.StockFisico += dto.Quantidade;
-            artigo.RecalcularStockVirtual();
             artigo.AtualizarPrecoMedio(dto.Quantidade, dto.PrecoUnitario);
             artigo.AtualizadoEm = DateTime.UtcNow;
 
@@ -167,7 +144,6 @@ namespace SistemaPDI.Application.Services
 
             // Atualizar stock do artigo
             lote.Artigo.StockFisico += diferencaStock;
-            lote.Artigo.RecalcularStockVirtual();
             lote.Artigo.AtualizadoEm = DateTime.UtcNow;
 
             await _loteRepository.AtualizarAsync(lote);
@@ -193,7 +169,6 @@ namespace SistemaPDI.Application.Services
 
             // Atualizar stock do artigo
             lote.Artigo.StockFisico -= lote.QtdDisponivel;
-            lote.Artigo.RecalcularStockVirtual();
             lote.Artigo.AtualizadoEm = DateTime.UtcNow;
 
             lote.Ativo = false;
@@ -249,8 +224,8 @@ namespace SistemaPDI.Application.Services
                 {
                     alocacoes.Add(new AlocacaoLoteDto(
                         lote.Id,
-                        lote.NumeroLote,
-                        lote.DataValidade,
+                        lote.NumeroLote ?? string.Empty,
+                        lote.DataValidade ?? DateTime.MinValue,
                         qtdParaAlocar,
                         FormatarLocalizacao(lote.Localizacao)
                     ));
@@ -340,7 +315,6 @@ namespace SistemaPDI.Application.Services
 
             // Atualizar stock do artigo
             lote.Artigo.StockFisico -= quantidade;
-            lote.Artigo.RecalcularStockVirtual();
             lote.Artigo.AtualizadoEm = DateTime.UtcNow;
 
             await _loteRepository.AtualizarAsync(lote);
@@ -380,9 +354,10 @@ namespace SistemaPDI.Application.Services
             l.ArtigoId,
             l.Artigo?.Nome ?? string.Empty,
             l.Artigo?.SKU ?? string.Empty,
-            l.NumeroLote,
-            l.DataValidade,
-            l.PrecoUnitario,
+            l.Artigo?.UrlImagem,
+            l.NumeroLote ?? string.Empty,
+            l.DataValidade ?? DateTime.MinValue,
+            l.PrecoUnitario ?? 0m,
             l.QtdDisponivel,
             l.QtdReservada,
             l.QtdRealmenteDisponivel,
@@ -391,7 +366,8 @@ namespace SistemaPDI.Application.Services
             l.Ativo,
             l.EstaExpirado,
             l.ValidadeProxima,
-            l.CriadoEm
+            l.CriadoEm,
+            l.EmTrafico
         );
 
         /// <summary>

@@ -1,0 +1,332 @@
+﻿@{
+    ViewData["Title"] = ViewBag.Title;
+    var artigo = ViewBag.Artigo as ArtigoDto;
+    var historico = ViewBag.Historico as List<HistoricoPrecoDto> ?? new List<HistoricoPrecoDto>();
+    var evolucao = ViewBag.Evolucao as List<EvolucaoPrecoDto> ?? new List<EvolucaoPrecoDto>();
+    var comparacao = ViewBag.Comparacao as ComparacaoFornecedorDto;
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* HEADER *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar ao Histórico
+    </a>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mt-2">
+        <div>
+            <h4 class="mb-1 text-dark">
+                <i class="bi bi-graph-up text-primary me-2"></i>
+                @artigo.Nome
+            </h4>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="badge bg-secondary">@artigo.SKU</span>
+                <span class="badge bg-info">@artigo.CategoriaNome</span>
+                <span class="text-muted small">Análise de Histórico de Preços</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* CARDS DE ESTATÍSTICAS *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100 border-start border-primary border-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                        <i class="bi bi-currency-euro text-primary"></i>
+                    </div>
+                    <h6 class="mb-0 fw-semibold small text-muted">Preço Médio</h6>
+                </div>
+                <h3 class="mb-0 fw-bold text-primary">@artigo.PrecoMedio.ToString("C2")</h3>
+                <small class="text-muted">preço unitário médio</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="icon-circle bg-secondary bg-opacity-10 me-2">
+                        <i class="bi bi-receipt text-secondary"></i>
+                    </div>
+                    <h6 class="mb-0 fw-semibold small text-muted">Total Compras</h6>
+                </div>
+                <h3 class="mb-0 fw-bold">@historico.Count</h3>
+                <small class="text-muted">transações registadas</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="icon-circle bg-info bg-opacity-10 me-2">
+                        <i class="bi bi-box-seam text-info"></i>
+                    </div>
+                    <h6 class="mb-0 fw-semibold small text-muted">Quantidade Total</h6>
+                </div>
+                <h3 class="mb-0 fw-bold text-info">@historico.Sum(h => h.Quantidade)</h3>
+                <small class="text-muted">unidades compradas</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100 border-start border-success border-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="icon-circle bg-success bg-opacity-10 me-2">
+                        <i class="bi bi-cash-stack text-success"></i>
+                    </div>
+                    <h6 class="mb-0 fw-semibold small text-muted">Valor Gasto</h6>
+                </div>
+                <h3 class="mb-0 fw-bold text-success">@historico.Sum(h => h.ValorTotal).ToString("C2")</h3>
+                <small class="text-muted">total investido</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* EVOLUÇÃO DE PREÇOS *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (evolucao.Any())
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-arrow-up-right me-2"></i>Evolução de Preços
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Fornecedor</th>
+                        <th class="text-end">Preço Anterior</th>
+                        <th class="text-end">Preço Atual</th>
+                        <th class="text-end">Diferença (€)</th>
+                        <th class="text-end">Diferença (%)</th>
+                        <th class="pe-3">Última Compra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ev in evolucao.OrderBy(e => e.PrecoAtual))
+                    {
+                        var corDiferenca = ev.DiferencaAbsoluta > 0 ? "danger" :
+                        ev.DiferencaAbsoluta < 0 ? "success" :
+                        "secondary";
+                        var iconDiferenca = ev.DiferencaAbsoluta > 0 ? "bi-arrow-up" :
+                        ev.DiferencaAbsoluta < 0 ? "bi-arrow-down" :
+                        "bi-dash";
+
+                        <tr>
+                            <td class="ps-3">
+                                <strong>@ev.FornecedorAtual</strong>
+                            </td>
+                            <td class="text-end text-muted">@ev.PrecoAnterior.ToString("C2")</td>
+                            <td class="text-end">
+                                <strong class="fs-6">@ev.PrecoAtual.ToString("C2")</strong>
+                            </td>
+                            <td class="text-end">
+                                <span class="badge bg-@corDiferenca">
+                                    <i class="bi @iconDiferenca me-1"></i>
+                                    @(ev.DiferencaAbsoluta >= 0 ? "+" : "")@ev.DiferencaAbsoluta.ToString("C2")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <span class="badge bg-@corDiferenca bg-opacity-75">
+                                    @(ev.DiferencaPercentual >= 0 ? "+" : "")@ev.DiferencaPercentual.ToString("F2")%
+                                </span>
+                            </td>
+                            <td class="pe-3">
+                                <small class="text-muted">@ev.DataUltimaCompra.ToString("dd/MM/yyyy")</small>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* COMPARAÇÃO ENTRE FORNECEDORES *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (comparacao != null && comparacao.Fornecedores.Any())
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-bar-chart me-2"></i>Comparação entre Fornecedores
+                </h6>
+                <span class="badge bg-secondary">Ordenados por melhor preço</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3" style="width: 60px;">Pos.</th>
+                        <th>Fornecedor</th>
+                        <th class="text-end">Último Preço</th>
+                        <th class="text-end">Preço Médio</th>
+                        <th class="text-center">Compras</th>
+                        <th class="pe-3">Última Compra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < comparacao.Fornecedores.Count; i++)
+                    {
+                        var fornecedor = comparacao.Fornecedores[i];
+                        var posicao = i + 1;
+                        var corPosicao = posicao == 1 ? "success" :
+                        posicao == 2 ? "info" :
+                        posicao == 3 ? "warning" : "secondary";
+                        var iconPosicao = posicao == 1 ? "bi-trophy-fill" :
+                        posicao == 2 ? "bi-award-fill" :
+                        posicao == 3 ? "bi-star-fill" : "";
+
+                        <tr class="@(posicao == 1 ? "table-success table-opacity-25" : "")">
+                            <td class="ps-3">
+                                <div class="d-flex align-items-center">
+                                    @if (posicao <= 3)
+                                    {
+                                        <div class="icon-circle-sm bg-@corPosicao me-2">
+                                            <i class="bi @iconPosicao text-white"></i>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border">@posicao º</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <strong>@fornecedor.FornecedorNome</strong>
+                                @if (posicao == 1)
+                                {
+                                    <span class="badge bg-success ms-2">
+                                        <i class="bi bi-check-lg me-1"></i>Melhor Preço
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <strong class="text-@corPosicao fs-6">@fornecedor.UltimoPreco.ToString("C2")</strong>
+                            </td>
+                            <td class="text-end text-muted">@fornecedor.PrecoMedio.ToString("C2")</td>
+                            <td class="text-center">
+                                <span class="badge bg-primary">@fornecedor.TotalCompras</span>
+                            </td>
+                            <td class="pe-3">
+                                <small class="text-muted">@fornecedor.UltimaCompra.ToString("dd/MM/yyyy")</small>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* HISTÓRICO COMPLETO *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 py-3">
+        <h6 class="mb-0 fw-bold">
+            <i class="bi bi-clock-history me-2"></i>Histórico Completo de Compras
+        </h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Data</th>
+                    <th>Fornecedor</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-end">Preço Unit.</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-center">Encomenda</th>
+                    <th class="pe-3">Observações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var h in historico.OrderByDescending(x => x.DataCompra))
+                {
+                    <tr>
+                        <td class="ps-3">
+                            <div class="fw-semibold">@h.DataCompra.ToString("dd/MM/yyyy")</div>
+                            <small class="text-muted">@h.DataCompra.ToString("HH:mm")</small>
+                        </td>
+                        <td>@h.FornecedorNome</td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@h.Quantidade</span>
+                        </td>
+                        <td class="text-end">@h.PrecoUnitario.ToString("C2")</td>
+                        <td class="text-end">
+                            <strong class="text-success">@h.ValorTotal.ToString("C2")</strong>
+                        </td>
+                        <td class="text-center">
+                            @if (!string.IsNullOrEmpty(h.EncomendaNumero))
+                            {
+                                <a asp-controller="Encomendas"
+                                   asp-action="Detalhes"
+                                   asp-route-id="@h.EncomendaId"
+                                   class="badge bg-info text-decoration-none">
+                                    @h.EncomendaNumero
+                                </a>
+                            }
+                        </td>
+                        <td class="pe-3">
+                            @if (!string.IsNullOrEmpty(h.Observacoes))
+                            {
+                                <small class="text-muted">@h.Observacoes</small>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .icon-circle {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon-circle-sm {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .icon-circle-sm i {
+            font-size: 12px;
+        }
+</style>

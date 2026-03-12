@@ -1,0 +1,245 @@
+﻿@model List<HistoricoPrecoDto>
+@{
+    ViewData["Title"] = "Histórico de Preços";
+    var dataInicio = (DateTime)(ViewBag.DataInicio ?? DateTime.Today.AddDays(-30));
+    var dataFim = (DateTime)(ViewBag.DataFim ?? DateTime.Today);
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* HEADER *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
+    <div>
+        <h4 class="mb-0 text-dark">Histórico de Preços</h4>
+        <p class="text-muted mb-0 d-none d-sm-block" style="font-size: 13px;">
+            Análise de evolução de preços e comparação entre fornecedores
+        </p>
+    </div>
+    <a asp-action="Comparar" class="btn btn-cvp">
+        <i class="bi bi-bar-chart me-1"></i>Comparar Fornecedores
+    </a>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* FILTROS *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form asp-action="Filtrar" method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold mb-1">
+                    <i class="bi bi-calendar3 me-1"></i>Data Início
+                </label>
+                <input type="date" name="dataInicio" class="form-control" value="@dataInicio.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold mb-1">
+                    <i class="bi bi-calendar3 me-1"></i>Data Fim
+                </label>
+                <input type="date" name="dataFim" class="form-control" value="@dataFim.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* CARDS DE ESTATÍSTICAS *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (Model.Any())
+{
+    var totalCompras = Model.Count;
+    var valorTotal = Model.Sum(h => h.ValorTotal);
+    var artigosUnicos = Model.Select(h => h.ArtigoId).Distinct().Count();
+    var fornecedoresUnicos = Model.Select(h => h.FornecedorId).Distinct().Count();
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                            <i class="bi bi-receipt text-primary"></i>
+                        </div>
+                        <h6 class="mb-0 fw-semibold small text-muted">Total de Compras</h6>
+                    </div>
+                    <h3 class="mb-0 fw-bold">@totalCompras</h3>
+                    <small class="text-muted">registos de preço</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-success border-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle bg-success bg-opacity-10 me-2">
+                            <i class="bi bi-currency-euro text-success"></i>
+                        </div>
+                        <h6 class="mb-0 fw-semibold small text-muted">Valor Total</h6>
+                    </div>
+                    <h3 class="mb-0 fw-bold text-success">@valorTotal.ToString("C2")</h3>
+                    <small class="text-muted">investido no período</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle bg-info bg-opacity-10 me-2">
+                            <i class="bi bi-box-seam text-info"></i>
+                        </div>
+                        <h6 class="mb-0 fw-semibold small text-muted">Artigos Diferentes</h6>
+                    </div>
+                    <h3 class="mb-0 fw-bold text-info">@artigosUnicos</h3>
+                    <small class="text-muted">artigos comprados</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle bg-warning bg-opacity-10 me-2">
+                            <i class="bi bi-shop text-warning"></i>
+                        </div>
+                        <h6 class="mb-0 fw-semibold small text-muted">Fornecedores</h6>
+                    </div>
+                    <h3 class="mb-0 fw-bold text-warning">@fornecedoresUnicos</h3>
+                    <small class="text-muted">fornecedores diferentes</small>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* TABELA DE HISTÓRICO *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (!Model.Any())
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+            <h5 class="text-muted">Nenhum registo encontrado</h5>
+            <p class="text-muted mb-0">
+                Não há histórico de preços para o período selecionado.<br>
+                <small>Ajuste os filtros de data ou aguarde encomendas serem concluídas.</small>
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-list me-2"></i>Registos de Preços
+                </h6>
+                <span class="badge bg-secondary">
+                    @dataInicio.ToString("dd/MM/yyyy") - @dataFim.ToString("dd/MM/yyyy")
+                </span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Data</th>
+                        <th>Artigo</th>
+                        <th>Fornecedor</th>
+                        <th class="text-center" style="width: 100px;">Quantidade</th>
+                        <th class="text-end" style="width: 110px;">Preço Unit.</th>
+                        <th class="text-end" style="width: 120px;">Total</th>
+                        <th class="text-center" style="width: 100px;">Encomenda</th>
+                        <th class="text-end pe-3" style="width: 80px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var historico in Model.OrderByDescending(h => h.DataCompra))
+                    {
+                        <tr>
+                            <td class="ps-3">
+                                <div class="fw-semibold">@historico.DataCompra.ToString("dd/MM/yyyy")</div>
+                                <small class="text-muted">@historico.DataCompra.ToString("HH:mm")</small>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">@historico.ArtigoNome</div>
+                                <small class="text-muted">@historico.ArtigoSKU</small>
+                            </td>
+                            <td>@historico.FornecedorNome</td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">@historico.Quantidade</span>
+                            </td>
+                            <td class="text-end">@historico.PrecoUnitario.ToString("C2")</td>
+                            <td class="text-end">
+                                <strong class="text-success">@historico.ValorTotal.ToString("C2")</strong>
+                            </td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(historico.EncomendaNumero))
+                                {
+                                    <a asp-controller="Encomendas"
+                                       asp-action="Detalhes"
+                                       asp-route-id="@historico.EncomendaId"
+                                       class="badge bg-info text-white text-decoration-none">
+                                        @historico.EncomendaNumero
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-end pe-3">
+                                <a asp-action="Artigo" asp-route-id="@historico.ArtigoId"
+                                   class="btn btn-sm btn-outline-secondary border-0"
+                                   title="Ver Histórico do Artigo">
+                                    <i class="bi bi-graph-up"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="5" class="text-end">TOTAL GERAL:</th>
+                        <th class="text-end">
+                            <strong class="text-success fs-6">@Model.Sum(h => h.ValorTotal).ToString("C2")</strong>
+                        </th>
+                        <th colspan="2"></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted">
+            <strong>@Model.Count</strong> registo(s) no período
+        </small>
+    </div>
+}
+
+<style>
+    .icon-circle {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

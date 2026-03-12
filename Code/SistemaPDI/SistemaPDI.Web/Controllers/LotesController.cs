@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Rendering; // ← Adicionado
 using SistemaPDI.Contracts.DTOs;
 using SistemaPDI.Web.Services;
 
@@ -27,9 +26,14 @@ namespace SistemaPDI.Web.Controllers
 
         /// <summary>
         /// GET /Lotes
-        /// Lista todos os lotes.
+        /// Lista todos os lotes com suporte a filtros.
         /// </summary>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? artigo = null,
+            string? numeroLote = null,
+            string? validade = null,
+            int? localizacaoId = null,
+            string? filtro = null)
         {
             var resultado = await _pdiService.ObterLotesAsync();
 
@@ -39,7 +43,58 @@ namespace SistemaPDI.Web.Controllers
                 return View(new List<LoteDto>());
             }
 
-            return View(resultado.Dados);
+            var lotes = resultado.Dados ?? new List<LoteDto>();
+
+            // Aplicar filtro rápido (emtrafico)
+            if (!string.IsNullOrWhiteSpace(filtro))
+            {
+                if (filtro.ToLower() == "emtrafico")
+                {
+                    lotes = lotes.Where(l => l.EmTrafico).ToList();
+                }
+            }
+
+            // Aplicar filtros normais
+            if (!string.IsNullOrWhiteSpace(artigo))
+            {
+                var artigoLower = artigo.ToLower();
+                lotes = lotes.Where(l => 
+                    l.NomeArtigo.ToLower().Contains(artigoLower) || 
+                    l.SKU.ToLower().Contains(artigoLower)
+                ).ToList();
+                ViewData["FiltroArtigo"] = artigo;
+            }
+
+            if (!string.IsNullOrWhiteSpace(numeroLote))
+            {
+                var numeroLoteLower = numeroLote.ToLower();
+                lotes = lotes.Where(l => 
+                    !string.IsNullOrEmpty(l.NumeroLote) && 
+                    l.NumeroLote.ToLower().Contains(numeroLoteLower)
+                ).ToList();
+                ViewData["FiltroNumeroLote"] = numeroLote;
+            }
+
+            if (!string.IsNullOrWhiteSpace(validade))
+            {
+                lotes = validade switch
+                {
+                    "proxima" => lotes.Where(l => l.ValidadeProxima && !l.EstaExpirado).ToList(),
+                    "expirada" => lotes.Where(l => l.EstaExpirado).ToList(),
+                    "valida" => lotes.Where(l => !l.EstaExpirado && !l.ValidadeProxima).ToList(),
+                    _ => lotes
+                };
+                ViewData["FiltroValidade"] = validade;
+            }
+
+            if (localizacaoId.HasValue && localizacaoId > 0)
+            {
+                lotes = lotes.Where(l => l.LocalizacaoId == localizacaoId.Value).ToList();
+                ViewData["FiltroLocalizacaoId"] = localizacaoId.Value;
+            }
+
+            await CarregarLocalizacoesAsync();
+            return View(lotes);
         }
 
         /// <summary>
@@ -58,23 +113,6 @@ namespace SistemaPDI.Web.Controllers
 
             var artigo = await _pdiService.ObterArtigoPorIdAsync(id);
             ViewBag.Artigo = artigo.Dados;
-
-            return View(resultado.Dados);
-        }
-
-        /// <summary>
-        /// GET /Lotes/AlertasValidade
-        /// Lista lotes com validade próxima ou expirados (RN13).
-        /// </summary>
-        public async Task<IActionResult> AlertasValidade()
-        {
-            var resultado = await _pdiService.ObterAlertasValidadeAsync(15);
-
-            if (!resultado.Sucesso)
-            {
-                MensagemErro(resultado.Erro!);
-                return View(new List<AlertaValidadeDto>());
-            }
 
             return View(resultado.Dados);
         }
@@ -136,6 +174,7 @@ namespace SistemaPDI.Web.Controllers
             if (!ModelState.IsValid)
             {
                 await CarregarArtigos();
+                await CarregarLocalizacoesAsync();
                 return View(dto);
             }
 
@@ -144,6 +183,7 @@ namespace SistemaPDI.Web.Controllers
             if (!resultado.Sucesso)
             {
                 await CarregarArtigos();
+                await CarregarLocalizacoesAsync();
                 ModelState.AddModelError("", resultado.Erro!);
                 return View(dto);
             }
@@ -172,6 +212,7 @@ namespace SistemaPDI.Web.Controllers
 
             var lote = resultado.Dados!;
             ViewBag.Lote = lote;
+            ViewBag.IsAdmin = VerificarPerfil("ADMINISTRADOR");
             await CarregarLocalizacoesAsync();  
 
             return View(new AtualizarLoteDto(
@@ -193,7 +234,24 @@ namespace SistemaPDI.Web.Controllers
             {
                 var loteAtual = await _pdiService.ObterLotePorIdAsync(id);
                 ViewBag.Lote = loteAtual.Dados;
+                ViewBag.IsAdmin = VerificarPerfil("ADMINISTRADOR");
+                await CarregarLocalizacoesAsync();
                 return View(dto);
+            }
+
+            // Validação: GESTOR e GESTOR_FINANCEIRO não podem editar quantidade
+            var loteOriginal = await _pdiService.ObterLotePorIdAsync(id);
+            if (!VerificarPerfil("ADMINISTRADOR"))
+            {
+                if (dto.QtdDisponivel != loteOriginal.Dados!.QtdDisponivel)
+                {
+                    var loteAtual = await _pdiService.ObterLotePorIdAsync(id);
+                    ViewBag.Lote = loteAtual.Dados;
+                    ViewBag.IsAdmin = false;
+                    await CarregarLocalizacoesAsync();
+                    ModelState.AddModelError("QtdDisponivel", "Não tem permissão para modificar o stock. Contacte o Administrador.");
+                    return View(dto);
+                }
             }
 
             var resultado = await _pdiService.AtualizarLoteAsync(id, dto);
@@ -202,6 +260,8 @@ namespace SistemaPDI.Web.Controllers
             {
                 var loteAtual = await _pdiService.ObterLotePorIdAsync(id);
                 ViewBag.Lote = loteAtual.Dados;
+                ViewBag.IsAdmin = VerificarPerfil("ADMINISTRADOR");
+                await CarregarLocalizacoesAsync();
                 ModelState.AddModelError("", resultado.Erro!);
                 return View(dto);
             }
@@ -249,13 +309,11 @@ namespace SistemaPDI.Web.Controllers
             
             if (resultado.Sucesso && resultado.Dados != null)
             {
-                ViewBag.Localizacoes = resultado.Dados
-                    .Select(l => new SelectListItem { Value = l.Id.ToString(), Text = l.Label })
-                    .ToList();
+                ViewBag.Localizacoes = resultado.Dados;
             }
             else
             {
-                ViewBag.Localizacoes = new List<SelectListItem>();
+                ViewBag.Localizacoes = new List<LocalizacaoDropdownDto>();
             }
         }
     }

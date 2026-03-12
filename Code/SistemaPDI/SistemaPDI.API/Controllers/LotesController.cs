@@ -66,17 +66,6 @@ namespace SistemaPDI.API.Controllers
             return Ok(resultado.Dados);
         }
 
-        /// <summary>
-        /// GET /api/lotes/alertas-validade?dias=15
-        /// Obtém lotes com validade próxima ou expirados (RN13).
-        /// </summary>
-        [HttpGet("alertas-validade")]
-        public async Task<IActionResult> GetAlertasValidade([FromQuery] int dias = 15)
-        {
-            var resultado = await _loteService.ObterAlertasValidadeAsync(dias);
-            return Ok(resultado.Dados);
-        }
-
         // ══════════════════════════════════════════════════════════════════════
         // ESCRITA
         // ══════════════════════════════════════════════════════════════════════

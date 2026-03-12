@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "Comparar Fornecedores";
+    var artigos = ViewBag.Artigos as List<ArtigoDto> ?? new List<ArtigoDto>();
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* HEADER *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar ao Histórico
+    </a>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mt-2">
+        <div>
+            <h4 class="mb-1 text-dark">
+                <i class="bi bi-bar-chart text-primary me-2"></i>
+                Comparar Fornecedores
+            </h4>
+            <p class="text-muted mb-0" style="font-size: 13px;">
+                Escolha um artigo para ver comparação de preços entre fornecedores
+            </p>
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* FORMULÁRIO DE SELEÇÃO *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="icon-circle bg-primary bg-opacity-10 mx-auto mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-search text-primary fs-4"></i>
+                    </div>
+                    <h5 class="fw-bold">Selecione um Artigo</h5>
+                    <p class="text-muted small mb-0">
+                        Veja como os preços variam entre diferentes fornecedores
+                    </p>
+                </div>
+
+                <form asp-action="Comparar" method="post">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-box-seam me-1"></i>Artigo
+                        </label>
+                        <select name="artigoId" class="form-select form-select-lg" required>
+                            <option value="">-- Selecione um artigo --</option>
+                            @foreach (var artigo in artigos.Where(a => a.Ativo).OrderBy(a => a.Nome))
+                            {
+                                <option value="@artigo.Id">
+                                    @artigo.Nome (@artigo.SKU)
+                                </option>
+                            }
+                        </select>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Apenas artigos com histórico de compras serão comparados
+                        </small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-cvp btn-lg">
+                            <i class="bi bi-bar-chart me-2"></i>Comparar Preços
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-circle {
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

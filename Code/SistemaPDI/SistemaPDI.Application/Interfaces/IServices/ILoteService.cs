@@ -20,11 +20,6 @@ namespace SistemaPDI.Application.Interfaces.IServices
         /// <summary>Obtém todos os lotes de um artigo.</summary>
         Task<Result<List<LoteDto>>> ObterPorArtigoAsync(int artigoId);
 
-        /// <summary>
-        /// Obtém lotes com validade próxima ou expirados (RN13).
-        /// </summary>
-        Task<Result<List<AlertaValidadeDto>>> ObterAlertasValidadeAsync(int diasAlerta = 15);
-
         // ── ESCRITA ───────────────────────────────────────────────────────────
 
         /// <summary>

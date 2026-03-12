@@ -273,7 +273,7 @@
         .topbar-left {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
         }
 
         /* Hamburger */
@@ -299,6 +299,10 @@
             font-size: 16px;
             font-weight: 600;
             color: #1A1A1A;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: calc(100vw - 150px);
         }
 
         .topbar-right {
@@ -444,6 +448,28 @@
 
             .btn-hamburger {
                 display: flex;
+                padding: 2px 4px;
+                min-width: 40px;
+                min-height: 40px;
+                flex-shrink: 0;
+            }
+
+            .topbar {
+                padding: 0 12px;
+                justify-content: flex-start;
+            }
+
+            .topbar-left {
+                flex: 1;
+            }
+
+            .topbar-title {
+                font-size: 15px;
+                max-width: calc(100vw - 100px);
+            }
+
+            .topbar-right {
+                display: none;
             }
 
             .topbar-date {
@@ -457,10 +483,33 @@
 
         @@media (max-width: 480px) {
             .topbar {
-                padding: 0 16px;
+                padding: 0 8px;
+                height: 56px;
+            }
+
+            .topbar-left {
+                gap: 8px;
+                flex: 1;
+            }
+
+            .btn-hamburger {
+                font-size: 20px;
+                min-width: 36px;
+                flex-shrink: 0;
+            }
+
+            .topbar-title {
+                font-size: 14px;
+                max-width: calc(100vw - 100px);
+            }
+
+            .page-content {
+                padding: 16px 12px;
             }
         }
     </style>
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
 
@@ -498,6 +547,9 @@
             <a asp-controller="Dashboard" asp-action="Index" class="nav-item-link">
                 <i class="bi bi-grid-1x2 nav-icon"></i> Dashboard
             </a>
+            <a asp-controller="HistoricosPrecos" asp-action="Index" class="nav-item-link">
+                <i class="bi bi-currency-dollar"></i> Histórico de Preços
+            </a>
 
             <div class="nav-section-label">Operações</div>
             <a asp-controller="Entradas" asp-action="Index" class="nav-item-link">
@@ -516,6 +568,9 @@
             </a>
             <a asp-controller="Lotes" asp-action="Index" class="nav-item-link">
                 <i class="bi bi-boxes nav-icon"></i> Lotes
+            </a>
+            <a asp-controller="Localizacoes" asp-action="Index" class="nav-item-link">
+                <i class="bi bi-geo-alt nav-icon"></i> Localizações
             </a>
             <a asp-controller="Alertas" asp-action="Index" class="nav-item-link">
                 <i class="bi bi-bell nav-icon"></i> Alertas
@@ -591,6 +646,7 @@
 
     </div>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const sidebar = document.getElementById('sidebar');

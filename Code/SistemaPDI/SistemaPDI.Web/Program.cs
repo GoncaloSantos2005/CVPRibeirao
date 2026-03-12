@@ -15,6 +15,9 @@ builder.Services.AddHttpClient<IPdiApiService, PdiApiService>(client =>
 // Serviço de imagens
 builder.Services.AddScoped<IImagemService, ImagemService>();
 
+// Serviço de ficheiros (PDFs, etc.)
+builder.Services.AddScoped<IFileService, FileService>();
+
 // Sessão (para guardar o token JWT)
 builder.Services.AddSession(options =>
 {

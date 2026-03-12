@@ -127,6 +127,120 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.ToTable("Categorias");
                 });
 
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Encomenda", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AprovadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AprovadoPor")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("AtualizadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CaminhoOrcamentoPdf")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ConfirmadaEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ConfirmadaPor")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CriadoPor")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataEntregaPrevista")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataEntregaReal")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataEnvioFornecedor")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("FornecedorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("GeradoPdfEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GeradoPdfPor")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("MotivoRejeicao")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("NumeroEncomenda")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Observacoes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ObservacoesInternas")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("RejeitadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejeitadoPor")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("SubmetidoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SubmetidoPor")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("ValorOrcamento")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ValorTotal")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FornecedorId");
+
+                    b.HasIndex("NumeroEncomenda")
+                        .IsUnique();
+
+                    b.ToTable("Encomendas");
+                });
+
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Fornecedor", b =>
                 {
                     b.Property<int>("Id")
@@ -201,6 +315,124 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.ToTable("Fornecedores");
                 });
 
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.HistoricoPreco", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArtigoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CriadoPor")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("DataCompra")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("EncomendaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FornecedorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observacoes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal>("PrecoUnitario")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Quantidade")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ValorTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtigoId");
+
+                    b.HasIndex("DataCompra");
+
+                    b.HasIndex("EncomendaId");
+
+                    b.HasIndex("FornecedorId");
+
+                    b.HasIndex("ArtigoId", "FornecedorId");
+
+                    b.ToTable("HistoricosPrecos");
+                });
+
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.LinhaEncomenda", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArtigoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DataValidade")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EncomendaId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LocalizacaoId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LoteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NumeroLote")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Observacoes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal?>("PrecoUnitario")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("QuantidadeAprovada")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("QuantidadeEncomendada")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuantidadeRecebida")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<decimal?>("Subtotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtigoId");
+
+                    b.HasIndex("EncomendaId");
+
+                    b.HasIndex("LocalizacaoId");
+
+                    b.HasIndex("LoteId");
+
+                    b.ToTable("LinhasEncomenda");
+                });
+
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Localizacao", b =>
                 {
                     b.Property<int>("Id")
@@ -260,30 +492,40 @@ namespace SistemaPDI.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<DateTime>("CriadoEm")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DataValidade")
+                    b.Property<DateTime?>("DataValidade")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("EmTrafico")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<int?>("LocalizacaoId")
                         .HasColumnType("int");
 
                     b.Property<string>("NumeroLote")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<decimal>("PrecoUnitario")
+                    b.Property<decimal?>("PrecoUnitario")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("QtdDisponivel")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("QtdReservada")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.HasKey("Id");
 
@@ -293,12 +535,16 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.HasIndex("DataValidade")
                         .HasDatabaseName("IX_Lote_DataValidade");
 
+                    b.HasIndex("EmTrafico")
+                        .HasDatabaseName("IX_Lote_EmTrafico");
+
                     b.HasIndex("LocalizacaoId")
                         .HasDatabaseName("IX_Lote_LocalizacaoId");
 
                     b.HasIndex("ArtigoId", "NumeroLote")
                         .IsUnique()
-                        .HasDatabaseName("IX_Lote_Artigo_NumeroLote");
+                        .HasDatabaseName("IX_Lote_Artigo_NumeroLote")
+                        .HasFilter("[NumeroLote] IS NOT NULL");
 
                     b.ToTable("Lotes");
                 });
@@ -357,12 +603,81 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.Navigation("Categoria");
                 });
 
-            modelBuilder.Entity("SistemaPDI.Domain.Entities.Lote", b =>
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Encomenda", b =>
+                {
+                    b.HasOne("SistemaPDI.Domain.Entities.Fornecedor", "Fornecedor")
+                        .WithMany("Encomendas")
+                        .HasForeignKey("FornecedorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Fornecedor");
+                });
+
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.HistoricoPreco", b =>
                 {
                     b.HasOne("SistemaPDI.Domain.Entities.Artigo", "Artigo")
                         .WithMany()
                         .HasForeignKey("ArtigoId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaPDI.Domain.Entities.Encomenda", "Encomenda")
+                        .WithMany()
+                        .HasForeignKey("EncomendaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemaPDI.Domain.Entities.Fornecedor", "Fornecedor")
+                        .WithMany()
+                        .HasForeignKey("FornecedorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Artigo");
+
+                    b.Navigation("Encomenda");
+
+                    b.Navigation("Fornecedor");
+                });
+
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.LinhaEncomenda", b =>
+                {
+                    b.HasOne("SistemaPDI.Domain.Entities.Artigo", "Artigo")
+                        .WithMany()
+                        .HasForeignKey("ArtigoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaPDI.Domain.Entities.Encomenda", "Encomenda")
+                        .WithMany("Linhas")
+                        .HasForeignKey("EncomendaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemaPDI.Domain.Entities.Localizacao", "Localizacao")
+                        .WithMany()
+                        .HasForeignKey("LocalizacaoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemaPDI.Domain.Entities.Lote", "Lote")
+                        .WithMany()
+                        .HasForeignKey("LoteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Artigo");
+
+                    b.Navigation("Encomenda");
+
+                    b.Navigation("Localizacao");
+
+                    b.Navigation("Lote");
+                });
+
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Lote", b =>
+                {
+                    b.HasOne("SistemaPDI.Domain.Entities.Artigo", "Artigo")
+                        .WithMany("Lotes")
+                        .HasForeignKey("ArtigoId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SistemaPDI.Domain.Entities.Localizacao", "Localizacao")
@@ -375,9 +690,24 @@ namespace SistemaPDI.Infrastructure.Migrations
                     b.Navigation("Localizacao");
                 });
 
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Artigo", b =>
+                {
+                    b.Navigation("Lotes");
+                });
+
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Categoria", b =>
                 {
                     b.Navigation("Artigos");
+                });
+
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Encomenda", b =>
+                {
+                    b.Navigation("Linhas");
+                });
+
+            modelBuilder.Entity("SistemaPDI.Domain.Entities.Fornecedor", b =>
+                {
+                    b.Navigation("Encomendas");
                 });
 
             modelBuilder.Entity("SistemaPDI.Domain.Entities.Localizacao", b =>

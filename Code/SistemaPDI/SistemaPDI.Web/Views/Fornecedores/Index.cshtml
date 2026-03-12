@@ -5,12 +5,19 @@
     ViewData["Title"] = "Gestão de Fornecedores";
     var perfil = ViewBag.Perfil as string;
     var podeGerir = perfil == "ADMINISTRADOR" || perfil == "GESTOR";
+    var total = Model.Count;
+    var preferenciais = Model.Count(f => f.Preferencial);
+    var ativos = Model.Count(f => f.Ativo);
+    var inativos = Model.Count(f => !f.Ativo);
 }
 
+<link rel="stylesheet" href="~/css/fornecedores-index.css" />
+
+<!-- Título e descrição -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="mb-0 text-dark">Gestão de Fornecedores</h4>
-        <p class="text-muted mb-0" style="font-size: 13px;">Gira os fornecedores de material médico.</p>
+        <p class="text-muted mb-0" style="font-size: 13px;">Controlo de fornecedores, preferenciais e histórico de encomendas.</p>
     </div>
     @if (podeGerir)
     {
@@ -20,13 +27,112 @@
     }
 </div>
 
-<div class="mb-3 d-flex gap-2">
-    <a asp-action="Index" class="btn btn-sm btn-outline-secondary @(ViewData["Filtro"] == null ? "active" : "")">Todos</a>
-    <a asp-action="Preferenciais" class="btn btn-sm btn-outline-warning @(ViewData["Filtro"]?.ToString() == "preferenciais" ? "active" : "")">Preferenciais</a>
-    @if (podeGerir)
-    {
-        <a asp-action="Desativados" class="btn btn-sm btn-outline-secondary @(ViewData["Filtro"]?.ToString() == "desativados" ? "active" : "")">Desativados</a>
-    }
+<!-- STAT CARDS -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm border-start border-primary border-3 h-100 stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Total de Fornecedores</p>
+                        <h3 class="mb-0">@total</h3>
+                    </div>
+                    <div class="icon-circle bg-primary bg-opacity-10">
+                        <i class="bi bi-people text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm border-start border-warning border-3 h-100 stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Preferenciais</p>
+                        <h3 class="mb-0">@preferenciais</h3>
+                    </div>
+                    <div class="icon-circle bg-warning bg-opacity-10">
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm border-start border-success border-3 h-100 stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Ativos</p>
+                        <h3 class="mb-0">@ativos</h3>
+                    </div>
+                    <div class="icon-circle bg-success bg-opacity-10">
+                        <i class="bi bi-check-circle text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm border-start border-danger border-3 h-100 stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Inativos</p>
+                        <h3 class="mb-0">@inativos</h3>
+                    </div>
+                    <div class="icon-circle bg-danger bg-opacity-10">
+                        <i class="bi bi-x-circle text-danger"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Barra de filtros avançada -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label small text-muted">Nome</label>
+                <input type="text" name="nome" class="form-control form-control-sm" placeholder="Nome..." value="@ViewData["FiltroNome"]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">NIF</label>
+                <input type="text" name="nif" class="form-control form-control-sm" placeholder="NIF..." value="@ViewData["FiltroNif"]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Localidade</label>
+                <input type="text" name="localidade" class="form-control form-control-sm" placeholder="Localidade..." value="@ViewData["FiltroLocalidade"]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Estado</label>
+                <select name="estado" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="ativo" selected="@(ViewData["FiltroEstado"]?.ToString() == "ativo")">Ativo</option>
+                    <option value="inativo" selected="@(ViewData["FiltroEstado"]?.ToString() == "inativo")">Inativo</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Preferencial</label>
+                <select name="preferencial" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="sim" selected="@(ViewData["FiltroPreferencial"]?.ToString() == "sim")">Sim</option>
+                    <option value="nao" selected="@(ViewData["FiltroPreferencial"]?.ToString() == "nao")">Não</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-sm btn-cvp flex-fill">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="card p-0 overflow-hidden shadow-sm border-0">
@@ -34,7 +140,7 @@
         <table class="table table-hover mb-0 align-middle">
             <thead class="table-light">
                 <tr>
-                    <th class="ps-3">Nome</th>
+                    <th class="ps-3">Fornecedor</th>
                     <th>NIF</th>
                     <th>Contacto</th>
                     <th>Localidade</th>
@@ -48,39 +154,54 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="8" class="text-center py-5 text-muted">Nenhum fornecedor encontrado.</td>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="icon-circle bg-light mb-2">
+                                    <i class="bi bi-people text-secondary" style="font-size:2rem;"></i>
+                                </div>
+                                <p class="mb-0 mt-2">Nenhum fornecedor encontrado para este filtro.</p>
+                            </div>
+                        </td>
                     </tr>
                 }
                 else
                 {
                     @foreach (var f in Model)
                     {
-                        <tr class="@(!f.Ativo ? "table-secondary" : "")">
+                        string rowClass = f.Preferencial ? "row-warning" : f.Ativo ? "row-valid" : "row-inactive";
+                        <tr class="@rowClass">
                             <td class="ps-3">
-                                <span class="fw-semibold text-dark">@f.Nome</span>
-                                @if (f.Preferencial)
-                                {
-                                    <span class="badge bg-warning text-dark ms-1" style="font-size:10px;">
-                                        <i class="bi bi-star-fill"></i> PREFERENCIAL
-                                    </span>
-                                }
-                                @if (!string.IsNullOrEmpty(f.PessoaContacto))
-                                {
-                                    <br />
-                                    <small class="text-muted">
-                                        <i class="bi bi-person"></i> @f.PessoaContacto
-                                    </small>
-                                }
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="icon-circle bg-light">
+                                        <i class="bi bi-person-badge text-secondary" style="font-size:1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-semibold text-dark">@f.Nome</span>
+                                        @if (f.Preferencial)
+                                        {
+                                            <span class="badge badge-warning ms-1">
+                                                <i class="bi bi-star-fill"></i> PREFERENCIAL
+                                            </span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(f.PessoaContacto))
+                                        {
+                                            <br />
+                                            <small class="text-muted">
+                                                <i class="bi bi-person"></i> @f.PessoaContacto
+                                            </small>
+                                        }
+                                    </div>
+                                </div>
                             </td>
                             <td class="text-muted small">@f.NIF</td>
                             <td>
                                 @if (!string.IsNullOrEmpty(f.Telefone))
                                 {
-                                    <div class="small"><i class="bi bi-telephone"></i> @f.Telefone</div>
+                                    <div class="small"><i class="bi bi-telephone me-1"></i> @f.Telefone</div>
                                 }
                                 @if (!string.IsNullOrEmpty(f.Email))
                                 {
-                                    <div class="small"><i class="bi bi-envelope"></i> @f.Email</div>
+                                    <div class="small"><i class="bi bi-envelope me-1"></i> @f.Email</div>
                                 }
                                 @if (string.IsNullOrEmpty(f.Telefone) && string.IsNullOrEmpty(f.Email))
                                 {
@@ -94,11 +215,11 @@
                             <td class="text-center">
                                 @if (f.Ativo)
                                 {
-                                    <span class="badge bg-success">Ativo</span>
+                                    <span class="badge badge-active">Ativo</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">Inativo</span>
+                                    <span class="badge badge-inactive">Inativo</span>
                                 }
                             </td>
                             <td class="text-center">

@@ -1,0 +1,775 @@
+﻿@model EncomendaDto
+@{
+    ViewData["Title"] = $"Encomenda {Model.NumeroEncomenda}";
+    var ehGestorLogistica = (bool)(ViewBag.EhGestorLogistica ?? false);
+    var ehGestor = (bool)(ViewBag.EhGestor ?? false);
+    var ehAdmin = (bool)(ViewBag.EhAdmin ?? false);
+
+    var corEstado = Model.Estado switch
+    {
+        "LISTA" => "secondary",
+        "RASCUNHO" => "info",
+        "PENDENTE" => "warning",
+        "CONFIRMADA" => "primary",
+        "ENVIADA" => "dark",
+        "PARCIAL" => "info",
+        "CONCLUIDA" => "success",
+        "CANCELADA" => "danger",
+        _ => "secondary"
+    };
+
+    var iconEstado = Model.Estado switch
+    {
+        "LISTA" => "bi-list-task",
+        "RASCUNHO" => "bi-file-earmark",
+        "PENDENTE" => "bi-hourglass-split",
+        "CONFIRMADA" => "bi-check-circle",
+        "ENVIADA" => "bi-truck",
+        "PARCIAL" => "bi-pie-chart",
+        "CONCLUIDA" => "bi-check-all",
+        "CANCELADA" => "bi-x-circle",
+        _ => "bi-circle"
+    };
+
+    var atrasada = Model.DataEntregaPrevista.HasValue &&
+                   Model.DataEntregaPrevista.Value < DateTime.Today &&
+                   Model.Estado != "CONCLUIDA" &&
+                   Model.Estado != "CANCELADA";
+
+    var foiRejeitada = !string.IsNullOrEmpty(Model.MotivoRejeicao) && Model.Estado == "LISTA";
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* HEADER *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar às Encomendas
+    </a>
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mt-2">
+        <div>
+            <h4 class="mb-1 text-dark">
+                <i class="bi @iconEstado text-@corEstado me-2"></i>
+                Encomenda @Model.NumeroEncomenda
+            </h4>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="badge bg-@corEstado">
+                    <i class="bi @iconEstado me-1"></i>@Model.Estado
+                </span>
+                @if (atrasada)
+                {
+                    <span class="badge bg-danger">
+                        <i class="bi bi-clock-fill me-1"></i>ATRASADA
+                    </span>
+                }
+                @if (foiRejeitada)
+                {
+                    <span class="badge bg-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>REJEITADA
+                    </span>
+                }
+                @if (!Model.Ativo)
+                {
+                    <span class="badge bg-secondary">INATIVO</span>
+                }
+                <span class="text-muted small">
+                    Criada em @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm") por @(Model.CriadoPor ?? "Sistema")
+                </span>
+            </div>
+        </div>
+        
+        @* BOTÕES DE AÇÃO POR ESTADO *@
+        <div class="d-flex flex-wrap gap-2">
+            @switch (Model.Estado)
+            {
+                case "LISTA":
+                    @if ((ehGestor || ehAdmin) && !foiRejeitada)
+                    {
+                        <a asp-action="GerarPdf" asp-route-id="@Model.Id" class="btn btn-outline-secondary" target="_blank">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                        </a>
+                        <a asp-action="EditarLista" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil-square me-1"></i>Editar
+                        </a>
+                        <form asp-action="MarcarRascunho" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-cvp" onclick="return confirm('Marcar como RASCUNHO e gerar PDF?')">
+                                <i class="bi bi-arrow-right-circle me-1"></i>Avançar
+                            </button>
+                        </form>
+                    }
+                    else if ((ehGestor || ehAdmin) && foiRejeitada)
+                    {
+                        <a asp-action="EditarLista" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="bi bi-pencil-square me-1"></i>Corrigir e Resubmeter
+                        </a>
+                    }
+                    break;
+
+                case "RASCUNHO":
+                    @if (ehGestor || ehAdmin)
+                    {
+                        <a asp-action="GerarPdf" asp-route-id="@Model.Id" class="btn btn-outline-secondary" target="_blank">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                        </a>
+                        <a asp-action="SubmeterOrcamento" asp-route-id="@Model.Id" class="btn btn-cvp">
+                            <i class="bi bi-upload me-1"></i>Submeter Orçamento
+                        </a>
+                    }
+                    break;
+
+                case "PENDENTE":
+                    @if (ehGestorLogistica || ehAdmin)
+                    {
+                        <a asp-action="AprovarPreencher" asp-route-id="@Model.Id" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i>Aprovar
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalRejeitar">
+                            <i class="bi bi-x-lg me-1"></i>Rejeitar
+                        </button>
+                    }
+                    break;
+
+                case "CONFIRMADA":
+                    @if (ehGestor || ehAdmin)
+                    {
+                        <form asp-action="ConfirmarEnviar" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-cvp" onclick="return confirm('Confirmar e enviar ao fornecedor?')">
+                                <i class="bi bi-send me-1"></i>Enviar ao Fornecedor
+                            </button>
+                        </form>
+                    }
+                    break;
+
+                case "ENVIADA":
+                case "PARCIAL":
+                    @if (ehGestor || ehAdmin)
+                    {
+                        <a asp-action="RegistarRececao" asp-route-id="@Model.Id" class="btn btn-success">
+                            <i class="bi bi-box-arrow-in-down me-1"></i>Registar Receção
+                        </a>
+                    }
+                    break;
+
+                case "CONCLUIDA":
+                    <span class="btn btn-success disabled">
+                        <i class="bi bi-check-circle-fill me-1"></i>Concluída
+                    </span>
+                    break;
+
+                case "CANCELADA":
+                    <span class="btn btn-danger disabled">
+                        <i class="bi bi-x-circle-fill me-1"></i>Cancelada
+                    </span>
+                    break;
+            }
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* ALERTA DE REJEIÇÃO *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (foiRejeitada)
+{
+    <div class="alert alert-danger border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-start">
+            <i class="bi bi-x-octagon-fill fs-4 me-3 text-danger flex-shrink-0"></i>
+            <div class="flex-grow-1">
+                <h6 class="alert-heading mb-1 fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Encomenda Rejeitada
+                </h6>
+                <p class="mb-2"><strong>Motivo:</strong> @Model.MotivoRejeicao</p>
+                @if (!string.IsNullOrEmpty(Model.RejeitadoPor))
+                {
+                    <small class="text-muted">
+                        <i class="bi bi-person me-1"></i>Rejeitada por <strong>@Model.RejeitadoPor</strong>
+                        @if (Model.RejeitadoEm.HasValue)
+                        {
+                            <text> em @Model.RejeitadoEm.Value.ToString("dd/MM/yyyy HH:mm")</text>
+                        }
+                    </small>
+                }
+                @if (ehGestor || ehAdmin)
+                {
+                    <hr class="my-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle text-info"></i>
+                        <small>Corrija a lista e submeta novamente para aprovação.</small>
+                        <a asp-action="EditarLista" asp-route-id="@Model.Id" class="btn btn-sm btn-danger ms-auto">
+                            <i class="bi bi-pencil-square me-1"></i>Corrigir Agora
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* CARDS DE RESUMO *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="row g-3 mb-4">
+    @* CARD INFORMAÇÕES *@
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                        <i class="bi bi-info-circle text-primary"></i>
+                    </div>
+                    <h6 class="mb-0 fw-semibold">Informações</h6>
+                </div>
+                <dl class="row mb-0 small">
+                    <dt class="col-5 text-muted">Fornecedor:</dt>
+                    <dd class="col-7 fw-semibold">
+                        @if (!string.IsNullOrEmpty(Model.FornecedorNome))
+                        {
+                            @Model.FornecedorNome
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Por definir</span>
+                        }
+                    </dd>
+                    
+                    @if (Model.DataEntregaPrevista.HasValue)
+                    {
+                        <dt class="col-5 text-muted">Entrega Prev.:</dt>
+                        <dd class="col-7">
+                            <span class="@(atrasada ? "text-danger fw-bold" : "")">
+                                @Model.DataEntregaPrevista.Value.ToString("dd/MM/yyyy")
+                            </span>
+                        </dd>
+                    }
+                    
+                    @if (Model.DataEntregaReal.HasValue)
+                    {
+                        <dt class="col-5 text-muted">Entrega Real:</dt>
+                        <dd class="col-7 text-success fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i>@Model.DataEntregaReal.Value.ToString("dd/MM/yyyy")
+                        </dd>
+                    }
+                    
+                    @if (Model.DataEnvioFornecedor.HasValue)
+                    {
+                        <dt class="col-5 text-muted">Enviada em:</dt>
+                        <dd class="col-7">@Model.DataEnvioFornecedor.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    @* CARD ARTIGOS *@
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-circle bg-info bg-opacity-10 me-2">
+                        <i class="bi bi-box-seam text-info"></i>
+                    </div>
+                    <h6 class="mb-0 fw-semibold">Artigos</h6>
+                </div>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <span class="text-muted small d-block">Linhas</span>
+                        <strong class="fs-4">@Model.TotalLinhas</strong>
+                    </div>
+                    <div class="col-4">
+                        <span class="text-muted small d-block">Unid.</span>
+                        <strong class="fs-4 text-primary">@Model.TotalArtigosRequisitados</strong>
+                    </div>
+                    @if (Model.TotalArtigosAprovados > 0)
+                    {
+                        <div class="col-4">
+                            <span class="text-muted small d-block">Aprov.</span>
+                            <strong class="fs-4 text-success">@Model.TotalArtigosAprovados</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* CARD FINANCEIRO *@
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100 @(Model.ValorTotal > 0 ? "border-start border-success border-3" : "")">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-circle bg-success bg-opacity-10 me-2">
+                        <i class="bi bi-currency-euro text-success"></i>
+                    </div>
+                    <h6 class="mb-0 fw-semibold">Financeiro</h6>
+                </div>
+                @if (Model.ValorTotal > 0)
+                {
+                    <div class="text-center">
+                        <span class="text-muted small d-block">Valor Total</span>
+                        <strong class="fs-3 text-success">@Model.ValorTotal.ToString("C2")</strong>
+                        @if (Model.ValorOrcamento.HasValue && Model.ValorTotal != Model.ValorOrcamento.Value)
+                        {
+                            var diferenca = Model.ValorTotal - Model.ValorOrcamento.Value;
+                            <br>
+                            <small class="badge bg-@(diferenca > 0 ? "danger" : "success")">
+                                @(diferenca > 0 ? "+" : "")@diferenca.ToString("C2") vs orçamento
+                            </small>
+                        }
+                    </div>
+                }
+                else if (Model.ValorOrcamento.HasValue)
+                {
+                    <div class="text-center">
+                        <span class="text-muted small d-block">Valor Orçado</span>
+                        <strong class="fs-3 text-warning">@Model.ValorOrcamento.Value.ToString("C2")</strong>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted">
+                        <i class="bi bi-dash-circle fs-3 d-block mb-1"></i>
+                        <small>Sem valores</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* CARD PROGRESSO *@
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-circle bg-@(Model.PercentualRecebido == 100 ? "success" : "warning") bg-opacity-10 me-2">
+                        <i class="bi bi-graph-up text-@(Model.PercentualRecebido == 100 ? "success" : "warning")"></i>
+                    </div>
+                    <h6 class="mb-0 fw-semibold">Progresso</h6>
+                </div>
+                @if (Model.TotalArtigosAprovados > 0)
+                {
+                    <div class="text-center mb-2">
+                        <strong class="fs-3 text-@(Model.PercentualRecebido == 100 ? "success" : "primary")">
+                            @Model.PercentualRecebido.ToString("F0")%
+                        </strong>
+                    </div>
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar bg-@(Model.PercentualRecebido == 100 ? "success" : "info")"
+                             role="progressbar" style="width: @Model.PercentualRecebido%;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Recebido: <strong class="text-success">@Model.TotalArtigosRecebidos</strong></span>
+                        <span>Pendente: <strong class="text-warning">@(Model.TotalArtigosAprovados - Model.TotalArtigosRecebidos)</strong></span>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted">
+                        <i class="bi bi-hourglass fs-3 d-block mb-1"></i>
+                        <small>Aguarda aprovação</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* ORÇAMENTO PDF *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (!string.IsNullOrEmpty(Model.CaminhoOrcamentoPdf))
+{
+    <div class="card border-0 shadow-sm mb-4 bg-warning bg-opacity-10">
+        <div class="card-body py-3">
+            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-file-earmark-pdf fs-4 text-danger me-3"></i>
+                    <div>
+                        <strong>Orçamento do Fornecedor</strong>
+                        <br><small class="text-muted">PDF anexado com valores do fornecedor</small>
+                    </div>
+                </div>
+                <a href="@Model.CaminhoOrcamentoPdf" target="_blank" class="btn btn-warning">
+                    <i class="bi bi-download me-1"></i>Ver PDF
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* TABELA DE ARTIGOS *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-box-seam me-2"></i>Lista de Artigos
+            </h6>
+            <span class="badge bg-secondary">@Model.TotalLinhas artigo(s)</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Artigo</th>
+                    <th class="text-center" style="width: 80px;">Req.</th>
+                    @if (Model.TotalArtigosAprovados > 0)
+                    {
+                        <th class="text-center" style="width: 80px;">Aprov.</th>
+                    }
+                    @if (Model.TotalArtigosRecebidos > 0)
+                    {
+                        <th class="text-center" style="width: 80px;">Receb.</th>
+                        <th style="width: 100px;">Lote</th>
+                    }
+                    @if (Model.Estado != "LISTA" && Model.Estado != "RASCUNHO" && Model.Estado != "PENDENTE")
+                    {
+                        <th class="text-end" style="width: 100px;">Preço</th>
+                        <th class="text-end pe-3" style="width: 110px;">Subtotal</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var linha in Model.Linhas)
+                {
+                    var percentualLinha = linha.QuantidadeAprovada > 0
+                        ? (decimal)linha.QuantidadeRecebida / linha.QuantidadeAprovada * 100
+                        : 0;
+                    
+                    var corLinha = percentualLinha == 100 ? "table-success" : 
+                                   percentualLinha > 0 ? "table-warning" : "";
+
+                    <tr class="@corLinha">
+                        <td class="ps-3">
+                            <div class="fw-semibold">@linha.ArtigoNome</div>
+                            <small class="text-muted">@linha.ArtigoSKU</small>
+                            @if (!string.IsNullOrEmpty(linha.Observacoes))
+                            {
+                                <br><small class="text-info"><i class="bi bi-chat-left-text me-1"></i>@linha.Observacoes</small>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@linha.QuantidadeEncomendada</span>
+                        </td>
+                        @if (Model.TotalArtigosAprovados > 0)
+                        {
+                            <td class="text-center">
+                                <span class="badge bg-primary">@linha.QuantidadeAprovada</span>
+                            </td>
+                        }
+                        @if (Model.TotalArtigosRecebidos > 0)
+                        {
+                            <td class="text-center">
+                                @if (linha.QuantidadeRecebida > 0)
+                                {
+                                    <span class="badge bg-success">@linha.QuantidadeRecebida</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(linha.NumeroLote))
+                                {
+                                    <span class="badge bg-info">@linha.NumeroLote</span>
+                                    @if (linha.DataValidade.HasValue)
+                                    {
+                                        <br><small class="text-muted">Val: @linha.DataValidade.Value.ToString("dd/MM/yy")</small>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                        }
+                        @if (Model.Estado != "LISTA" && Model.Estado != "RASCUNHO" && Model.Estado != "PENDENTE")
+                        {
+                            <td class="text-end">
+                                @(linha.PrecoUnitario?.ToString("C2") ?? "—")
+                            </td>
+                            <td class="text-end pe-3">
+                                <strong class="text-success">@(linha.Subtotal?.ToString("C2") ?? "—")</strong>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+            @if (Model.ValorTotal > 0)
+            {
+                var colspanTotal = 2;
+                if (Model.TotalArtigosAprovados > 0) colspanTotal++;
+                if (Model.TotalArtigosRecebidos > 0) colspanTotal += 2;
+                colspanTotal++;
+                
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="@colspanTotal" class="text-end">TOTAL:</th>
+                        <th class="text-end pe-3">
+                            <strong class="text-success fs-5">@Model.ValorTotal.ToString("C2")</strong>
+                        </th>
+                    </tr>
+                </tfoot>
+            }
+        </table>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* OBSERVAÇÕES *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (!string.IsNullOrEmpty(Model.Observacoes) || (!string.IsNullOrEmpty(Model.ObservacoesInternas) && (ehGestorLogistica || ehAdmin)))
+{
+    <div class="row g-3 mb-4">
+        @if (!string.IsNullOrEmpty(Model.Observacoes))
+        {
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bi bi-chat-left-text me-2"></i>Observações
+                        </h6>
+                    </div>
+                    <div class="card-body pt-0">
+                        <p class="mb-0 small" style="white-space: pre-wrap;">@Model.Observacoes</p>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Model.ObservacoesInternas) && (ehGestorLogistica || ehAdmin))
+        {
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100 border-start border-warning border-3">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bi bi-lock me-2 text-warning"></i>Notas Internas
+                        </h6>
+                    </div>
+                    <div class="card-body pt-0">
+                        <p class="mb-0 small" style="white-space: pre-wrap;">@Model.ObservacoesInternas</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* HISTÓRICO / AUDITORIA *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h6 class="mb-0 fw-bold">
+            <i class="bi bi-clock-history me-2"></i>Histórico
+        </h6>
+    </div>
+    <div class="card-body pt-0">
+        <div class="timeline-simple">
+            @* Criação *@
+            <div class="d-flex align-items-start mb-3">
+                <div class="icon-circle-sm bg-secondary me-3">
+                    <i class="bi bi-plus-circle text-white"></i>
+                </div>
+                <div>
+                    <strong class="small">Criada</strong>
+                    <br><small class="text-muted">@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm") por @(Model.CriadoPor ?? "Sistema")</small>
+                </div>
+            </div>
+            
+            @* Orçamento Submetido *@
+            @if (Model.ValorOrcamento.HasValue && Model.Estado != "LISTA" && Model.Estado != "RASCUNHO")
+            {
+                <div class="d-flex align-items-start mb-3">
+                    <div class="icon-circle-sm bg-warning me-3">
+                        <i class="bi bi-upload text-white"></i>
+                    </div>
+                    <div>
+                        <strong class="small">Orçamento Submetido</strong>
+                        <br><small class="text-muted">Valor: @Model.ValorOrcamento.Value.ToString("C2")</small>
+                    </div>
+                </div>
+            }
+            
+            @* Aprovação *@
+            @if (Model.TotalArtigosAprovados > 0 && Model.Estado != "LISTA" && Model.Estado != "RASCUNHO" && Model.Estado != "PENDENTE")
+            {
+                <div class="d-flex align-items-start mb-3">
+                    <div class="icon-circle-sm bg-success me-3">
+                        <i class="bi bi-check-lg text-white"></i>
+                    </div>
+                    <div>
+                        <strong class="small">Aprovada</strong>
+                        <br><small class="text-muted">@Model.TotalArtigosAprovados artigos aprovados</small>
+                    </div>
+                </div>
+            }
+            
+            @* Rejeição *@
+            @if (Model.RejeitadoEm.HasValue)
+            {
+                <div class="d-flex align-items-start mb-3">
+                    <div class="icon-circle-sm bg-danger me-3">
+                        <i class="bi bi-x-lg text-white"></i>
+                    </div>
+                    <div>
+                        <strong class="small text-danger">Rejeitada</strong>
+                        <br><small class="text-muted">@Model.RejeitadoEm.Value.ToString("dd/MM/yyyy HH:mm") por @(Model.RejeitadoPor ?? "—")</small>
+                    </div>
+                </div>
+            }
+            
+            @* Envio *@
+            @if (Model.DataEnvioFornecedor.HasValue)
+            {
+                <div class="d-flex align-items-start mb-3">
+                    <div class="icon-circle-sm bg-dark me-3">
+                        <i class="bi bi-truck text-white"></i>
+                    </div>
+                    <div>
+                        <strong class="small">Enviada ao Fornecedor</strong>
+                        <br><small class="text-muted">@Model.DataEnvioFornecedor.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                </div>
+            }
+            
+            @* Receção Parcial *@
+            @if (Model.TotalArtigosRecebidos > 0 && Model.TotalArtigosRecebidos < Model.TotalArtigosAprovados)
+            {
+                <div class="d-flex align-items-start mb-3">
+                    <div class="icon-circle-sm bg-info me-3">
+                        <i class="bi bi-pie-chart text-white"></i>
+                    </div>
+                    <div>
+                        <strong class="small">Receção Parcial</strong>
+                        <br><small class="text-muted">@Model.TotalArtigosRecebidos de @Model.TotalArtigosAprovados artigos (@Model.PercentualRecebido.ToString("F0")%)</small>
+                    </div>
+                </div>
+            }
+            
+            @* Conclusão *@
+            @if (Model.Estado == "CONCLUIDA")
+            {
+                <div class="d-flex align-items-start">
+                    <div class="icon-circle-sm bg-success me-3">
+                        <i class="bi bi-check-all text-white"></i>
+                    </div>
+                    <div>
+                        <strong class="small text-success">Concluída</strong>
+                        <br><small class="text-muted">
+                            @if (Model.DataEntregaReal.HasValue)
+                            {
+                                @Model.DataEntregaReal.Value.ToString("dd/MM/yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <text>Todos os artigos recebidos</text>
+                            }
+                        </small>
+                    </div>
+                </div>
+            }
+            
+            @* Cancelamento *@
+            @if (Model.Estado == "CANCELADA")
+            {
+                <div class="d-flex align-items-start">
+                    <div class="icon-circle-sm bg-danger me-3">
+                        <i class="bi bi-x-circle text-white"></i>
+                    </div>
+                    <div>
+                        <strong class="small text-danger">Cancelada</strong>
+                        @if (!string.IsNullOrEmpty(Model.MotivoRejeicao))
+                        {
+                            <br><small class="text-muted">Motivo: @Model.MotivoRejeicao</small>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* MODAL REJEITAR *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (Model.Estado == "PENDENTE" && (ehGestorLogistica || ehAdmin))
+{
+    <div class="modal fade" id="modalRejeitar" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form asp-action="Rejeitar" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-x-circle me-2"></i>Rejeitar Encomenda
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Encomenda: <strong>@Model.NumeroEncomenda</strong></p>
+                        <p>Valor orçado: <strong class="text-warning">@Model.ValorOrcamento?.ToString("C2")</strong></p>
+                        
+                        <div class="alert alert-light small mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            A encomenda voltará ao estado <strong>LISTA</strong> para o requisitante corrigir.
+                        </div>
+                        
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold">Motivo da Rejeição <span class="text-danger">*</span></label>
+                            <textarea name="motivo" class="form-control" rows="4" required
+                                      placeholder="Explique o motivo da rejeição..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle me-1"></i>Confirmar Rejeição
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    /* Círculos para os cards - tamanho fixo para não ficarem ovais */
+    .icon-circle {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Círculos menores para o histórico */
+    .icon-circle-sm {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .icon-circle-sm i {
+        font-size: 12px;
+    }
+</style>

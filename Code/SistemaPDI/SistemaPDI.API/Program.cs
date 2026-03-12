@@ -1,14 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using SistemaPDI.Infrastructure.Data;
-using SistemaPDI.Application.Interfaces.IRepositories;
-using SistemaPDI.Infrastructure.Repositories;
-using SistemaPDI.Application.Interfaces.IUtilizadorServices;
-using SistemaPDI.Application.Interfaces.IServices;
-using SistemaPDI.Application.Services;
 using Microsoft.OpenApi.Models;
+using SistemaPDI.Application.Interfaces.IRepositories;
+using SistemaPDI.Application.Interfaces.IServices;
+using SistemaPDI.Application.Interfaces.IUtilizadorServices;
+using SistemaPDI.Application.Services;
+using SistemaPDI.Infrastructure.Data;
+using SistemaPDI.Infrastructure.Repositories;
+using SistemaPDI.Web.Services;
+using System.Text;
+using QuestPDF.Infrastructure;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +25,10 @@ builder.Services.AddScoped<IUtilizadorRepository, UtilizadorRepository>();
 builder.Services.AddScoped<IArtigoRepository, ArtigoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
-builder.Services.AddScoped<ILoteRepository, LoteRepository>();  // ← NOVO
+builder.Services.AddScoped<ILoteRepository, LoteRepository>();  
 builder.Services.AddScoped<ILocalizacaoRepository, LocalizacaoRepository>();
+builder.Services.AddScoped<IEncomendaRepository, EncomendaRepository>();
+builder.Services.AddScoped<IHistoricoPrecoRepository, HistoricoPrecoRepository>();
 
 // ── Serviços ─────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -30,8 +36,11 @@ builder.Services.AddScoped<IUtilizadorService, UtilizadorService>();
 builder.Services.AddScoped<IArtigoService, ArtigoService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IFornecedorService, FornecedorService>();
-builder.Services.AddScoped<ILoteService, LoteService>();  // ← NOVO
+builder.Services.AddScoped<ILoteService, LoteService>();  
 builder.Services.AddScoped<ILocalizacaoService, LocalizacaoService>();
+builder.Services.AddScoped<IEncomendaService, EncomendaService>();
+builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IHistoricoPrecoService, HistoricoPrecoService>();
 
 // ── JWT Authentication ─────────────────────────────────────────────────────────
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

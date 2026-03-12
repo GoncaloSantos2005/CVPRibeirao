@@ -16,8 +16,14 @@ namespace SistemaPDI.Application.Interfaces.IRepositories
         /// <summary>Obtém um lote por ID com dados do Artigo.</summary>
         Task<Lote?> ObterPorIdComArtigoAsync(int id);
 
+        /// <summary>Obtém um lote pelo número do lote.</summary>
+        Task<Lote?> ObterPorNumeroAsync(string numeroLote);
+
         /// <summary>Obtém todos os lotes de um artigo.</summary>
         Task<List<Lote>> ObterPorArtigoIdAsync(int artigoId);
+
+        /// <summary>Obtém todos os lotes de um artigo pendente.</summary>
+        Task<List<Lote>> ObterPendentesAsync();
 
         /// <summary>
         /// Obtém lotes disponíveis para FEFO (RN03).

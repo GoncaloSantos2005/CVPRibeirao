@@ -128,5 +128,23 @@ namespace SistemaPDI.API.Controllers
 
             return Ok(new { quantidadeSugerida = resultado.Dados });
         }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // REMOÇÃO
+        // ══════════════════════════════════════════════════════════════════════
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMINISTRADOR")]
+        public async Task<IActionResult> Remover(int id)
+        {
+            // Usa AlternarEstadoAtivo como "soft delete"
+            var nomeUtilizador = User.Identity?.Name ?? "Sistema";
+            var resultado = await _artigoService.AlternarEstadoAtivoAsync(id, nomeUtilizador);
+
+            if (!resultado.Sucesso)
+                return BadRequest(new { erro = resultado.Erro });
+
+            return NoContent();
+        }
     }
 }

@@ -1,0 +1,674 @@
+﻿@using SistemaPDI.Web.Models
+@model AprovarPreencherViewModel
+@{
+    var encomenda = ViewBag.Encomenda as EncomendaDto;
+    var fornecedores = ViewBag.Fornecedores as List<FornecedorDropdownDto> ?? new List<FornecedorDropdownDto>();
+    ViewData["Title"] = $"Aprovar Encomenda {encomenda?.NumeroEncomenda}";
+
+    var precoMedioSugerido = (encomenda?.ValorOrcamento ?? 0) > 0 && (encomenda?.TotalArtigosRequisitados ?? 0) > 0
+        ? (encomenda.ValorOrcamento.Value / encomenda.TotalArtigosRequisitados).ToString("N2")
+        : "0.00";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar às Encomendas
+    </a>
+    <h4 class="mt-2 text-dark">
+        <i class="bi bi-clipboard-check me-2"></i>Aprovar Encomenda @encomenda?.NumeroEncomenda
+    </h4>
+    <p class="text-muted mb-0" style="font-size: 13px;">
+        Criada por @(encomenda?.CriadoPor ?? "Sistema") em @encomenda?.DataCriacao.ToString("dd/MM/yyyy")
+    </p>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* RESUMO DO ORÇAMENTO SUBMETIDO *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-warning bg-opacity-10 border-0 py-3">
+                <h6 class="mb-0 fw-bold text-warning">
+                    <i class="bi bi-file-earmark-text me-2"></i>Orçamento Submetido para Aprovação
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4 border-end">
+                        <span class="text-muted small d-block">Valor Total</span>
+                        <strong class="fs-3 text-warning" id="valorOrcamentoDisplay">@encomenda?.ValorOrcamento?.ToString("N2")€</strong>
+                    </div>
+                    <div class="col-4 border-end">
+                        <span class="text-muted small d-block">Artigos / Unidades</span>
+                        <strong class="fs-4">@encomenda?.TotalLinhas <small class="text-muted fw-normal">art.</small></strong>
+                        <span class="text-muted mx-1">/</span>
+                        <strong class="fs-4">@encomenda?.TotalArtigosRequisitados <small class="text-muted fw-normal">un.</small></strong>
+                    </div>
+                    <div class="col-4">
+                        <span class="text-muted small d-block">Preço Médio/Unidade</span>
+                        <strong class="fs-4">@precoMedioSugerido€</strong>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(encomenda?.CaminhoOrcamentoPdf))
+                {
+                    <hr class="my-3">
+                    <div class="text-center">
+                        <a href="@encomenda.CaminhoOrcamentoPdf" target="_blank" class="btn btn-warning">
+                            <i class="bi bi-file-pdf me-2"></i>Abrir PDF do Orçamento
+                        </a>
+                        <p class="small text-muted mt-2 mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Consulte o PDF para preencher os preços de cada artigo
+                        </p>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(encomenda?.Observacoes))
+                {
+                    <hr class="my-3">
+                    <div class="small">
+                        <strong class="text-muted">Observações do requisitante:</strong>
+                        <p class="mb-0 mt-1">@encomenda.Observacoes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Valor Final a Aprovar *@
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100 border-start border-success border-4">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <span class="text-muted small d-block mb-2">VALOR FINAL A APROVAR</span>
+                <strong class="display-5 text-success" id="valorTotalDisplay">0,00€</strong>
+                <div class="mt-2" id="diferencaContainer">
+                    <span class="badge bg-secondary" id="diferencaDisplay">Preencha os valores</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* FORMULÁRIO DE APROVAÇÃO *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<form asp-action="AprovarPreencher" asp-route-id="@encomenda?.Id" method="post" id="formAprovar">
+    @Html.AntiForgeryToken()
+
+    @* PASSO 1: DADOS DA ENCOMENDA *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex align-items-center">
+                <span class="badge bg-cvp rounded-circle me-2" style="width: 28px; height: 28px; line-height: 20px;">1</span>
+                <h6 class="mb-0 fw-bold">Dados da Encomenda</h6>
+            </div>
+        </div>
+        <div class="card-body pt-0">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="FornecedorId" class="form-label small fw-semibold">
+                        Fornecedor <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="FornecedorId" class="form-select" id="selectFornecedor" required>
+                        <option value="">Selecione o fornecedor...</option>
+                        @foreach (var f in fornecedores.OrderByDescending(f => f.Preferencial).ThenBy(f => f.Nome))
+                        {
+                            <option value="@f.Id" data-tempo="@f.TempoEntrega">
+                                @(f.Preferencial ? "⭐ " : "")@f.Nome
+                                @if (f.TempoEntrega > 0)
+                                {
+                                    <text> — @f.TempoEntrega dias entrega</text>
+                                }
+                            </option>
+                        }
+                    </select>
+                    <small class="text-muted">⭐ Fornecedor preferencial</small>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="DataEntregaPrevista" class="form-label small fw-semibold">
+                        Data de Entrega Prevista
+                    </label>
+                    <input asp-for="DataEntregaPrevista" type="date" class="form-control" id="inputDataEntrega" />
+                    <small class="text-success" id="sugestaoEntrega"></small>
+                </div>
+                <div class="col-12">
+                    <label asp-for="ObservacoesInternas" class="form-label small fw-semibold">
+                        <i class="bi bi-lock me-1"></i>Notas Internas <small class="text-muted fw-normal">(apenas visível para a equipa)</small>
+                    </label>
+                    <textarea asp-for="ObservacoesInternas" class="form-control" rows="2"
+                              placeholder="Ex: Negociado desconto de 5%, contacto direto com o João..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* PASSO 2: PREENCHER ARTIGOS *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-cvp rounded-circle me-2" style="width: 28px; height: 28px; line-height: 20px;">2</span>
+                    <h6 class="mb-0 fw-bold">Preencher Preços dos Artigos</h6>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="btnPreencherAuto"
+                        title="Distribui o valor do orçamento igualmente por todas as unidades">
+                    <i class="bi bi-calculator me-1"></i>Calcular Preço Médio
+                </button>
+            </div>
+            <p class="text-muted small mb-0 ms-5 ps-1 mt-1">
+                Preencha o preço unitário de cada artigo conforme o orçamento do fornecedor
+            </p>
+            <div class="alert alert-info small py-2 mb-0 mt-2 ms-5">
+                <i class="bi bi-info-circle me-1"></i>
+                <strong>Nota:</strong> Use <strong>vírgula</strong> como separador decimal (ex: 1,50 €)
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle" id="tabelaArtigos">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Artigo</th>
+                        <th class="text-center" style="width: 70px;">Qtd</th>
+                        <th class="text-center" style="width: 100px;">Aprovar <span class="text-danger">*</span></th>
+                        <th style="width: 140px;">Preço Unit. <span class="text-danger">*</span></th>
+                        <th class="text-end" style="width: 110px;">Subtotal</th>
+                        <th style="width: 120px;">Lote</th>
+                        <th style="width: 130px;">Validade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (encomenda?.Linhas != null)
+                    {
+                        @for (int i = 0; i < encomenda.Linhas.Count; i++)
+                        {
+                            var linha = encomenda.Linhas[i];
+                            <tr class="linha-artigo" data-qtd-req="@linha.QuantidadeEncomendada">
+                                <td class="ps-3">
+                                    <input type="hidden" name="Linhas[@i].LinhaId" value="@linha.Id" />
+                                    <div class="fw-semibold">@linha.ArtigoNome</div>
+                                    <small class="text-muted">@linha.ArtigoSKU</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">@linha.QuantidadeEncomendada</span>
+                                </td>
+                                <td>
+                                    <input type="number"
+                                           name="Linhas[@i].QuantidadeAprovada"
+                                           class="form-control form-control-sm text-center input-qtd"
+                                           value="@linha.QuantidadeEncomendada"
+                                           min="1"
+                                           required />
+                                </td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text"
+                                               name="Linhas[@i].PrecoUnitario"
+                                               class="form-control text-end input-preco"
+                                               placeholder="0,00"
+                                               pattern="[0-9]+([,\.][0-9]+)?"
+                                               required />
+                                        <span class="input-group-text">€</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="subtotal text-success">—</strong>
+                                </td>
+                                <td>
+                                    <input type="text"
+                                           name="Linhas[@i].NumeroLote"
+                                           class="form-control form-control-sm"
+                                           placeholder="Opcional"
+                                           maxlength="50" />
+                                </td>
+                                <td>
+                                    <input type="date"
+                                           name="Linhas[@i].DataValidade"
+                                           class="form-control form-control-sm" />
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr class="fw-bold">
+                        <td class="ps-3">TOTAL</td>
+                        <td class="text-center">@encomenda?.TotalArtigosRequisitados</td>
+                        <td class="text-center"><span id="totalQtdAprov" class="text-primary">0</span></td>
+                        <td></td>
+                        <td class="text-end text-success fs-5" id="totalValorTabela">0,00€</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    @* ALERTA DE DIFERENÇA *@
+    <div id="alertaDiferencaGrande" class="alert alert-danger border-0 shadow-sm mb-4 d-none">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <div>
+                <strong>Atenção!</strong> O valor final é diferente do orçamento submetido.
+                <span id="msgDiferencaGrande"></span>
+            </div>
+        </div>
+    </div>
+
+    @* PASSO 3: CONFIRMAR *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex align-items-center">
+                <span class="badge bg-cvp rounded-circle me-2" style="width: 28px; height: 28px; line-height: 20px;">3</span>
+                <h6 class="mb-0 fw-bold">Confirmar Aprovação</h6>
+            </div>
+        </div>
+        <div class="card-body pt-0">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input check-confirm" type="checkbox" id="check1">
+                        <label class="form-check-label" for="check1">
+                            Verifiquei todos os preços e quantidades
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input check-confirm" type="checkbox" id="check2">
+                        <label class="form-check-label" for="check2">
+                            Os valores correspondem ao orçamento do fornecedor
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input check-confirm" type="checkbox" id="check3">
+                        <label class="form-check-label" for="check3">
+                            Confirmo a aprovação desta encomenda
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div id="alertaIncompleto" class="alert alert-info small py-2 mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Preencha todos os preços para continuar
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* BOTÕES *@
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-4">
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Cancelar
+            </a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalRejeitar">
+                <i class="bi bi-x-circle me-1"></i>Rejeitar
+            </button>
+        </div>
+        <button type="submit" class="btn btn-success btn-lg px-4" id="btnAprovar" disabled>
+            <i class="bi bi-check-circle me-1"></i>Aprovar Encomenda
+        </button>
+    </div>
+</form>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* MODAL REJEITAR *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="modal fade" id="modalRejeitar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="Rejeitar" asp-route-id="@encomenda?.Id" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Rejeitar Encomenda</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">
+                        <strong>@encomenda?.NumeroEncomenda</strong> — @encomenda?.ValorOrcamento?.ToString("C2")
+                    </p>
+
+                    <div class="alert alert-light small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        A encomenda voltará ao estado <strong>LISTA</strong> para o requisitante corrigir.
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold">Motivo da Rejeição <span class="text-danger">*</span></label>
+                        <textarea name="motivo" class="form-control" rows="3" required
+                                  placeholder="Explique o motivo da rejeição..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i>Rejeitar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ═══════════════════════════════════════════════════════════════════
+            // CONFIGURAÇÃO
+            // ═══════════════════════════════════════════════════════════════════
+            const CONFIG = {
+                valorOrcamento: @((encomenda?.ValorOrcamento ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                totalLinhas: @(encomenda?.TotalLinhas ?? 0),
+                totalUnidades: @(encomenda?.TotalArtigosRequisitados ?? 0),
+                limiteAlertaPercentual: 5
+            };
+
+            // Elementos
+            const form = document.getElementById('formAprovar');
+            const btnAprovar = document.getElementById('btnAprovar');
+            const btnPreencherAuto = document.getElementById('btnPreencherAuto');
+            const selectFornecedor = document.getElementById('selectFornecedor');
+            const inputDataEntrega = document.getElementById('inputDataEntrega');
+            const sugestaoEntrega = document.getElementById('sugestaoEntrega');
+            const valorTotalDisplay = document.getElementById('valorTotalDisplay');
+            const diferencaDisplay = document.getElementById('diferencaDisplay');
+            const totalQtdAprov = document.getElementById('totalQtdAprov');
+            const totalValorTabela = document.getElementById('totalValorTabela');
+            const alertaIncompleto = document.getElementById('alertaIncompleto');
+            const alertaDiferencaGrande = document.getElementById('alertaDiferencaGrande');
+            const msgDiferencaGrande = document.getElementById('msgDiferencaGrande');
+            const checkboxes = document.querySelectorAll('.check-confirm');
+            const linhasArtigo = document.querySelectorAll('.linha-artigo');
+
+            // ═══════════════════════════════════════════════════════════════════
+            // FUNÇÕES UTILITÁRIAS
+            // ═══════════════════════════════════════════════════════════════════
+            function formatarMoeda(valor) {
+                return valor.toLocaleString('pt-PT', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + '€';
+            }
+
+            function formatarDataInput(data) {
+                const ano = data.getFullYear();
+                const mes = String(data.getMonth() + 1).padStart(2, '0');
+                const dia = String(data.getDate()).padStart(2, '0');
+                return ano + '-' + mes + '-' + dia;
+            }
+
+            function formatarDataPT(data) {
+                const dia = String(data.getDate()).padStart(2, '0');
+                const mes = String(data.getMonth() + 1).padStart(2, '0');
+                const ano = data.getFullYear();
+                return dia + '/' + mes + '/' + ano;
+            }
+
+            // Função para converter valor do input (aceita ponto ou vírgula)
+            function parsePreco(valor) {
+                if (!valor) return 0;
+                // Substituir vírgula por ponto para o JavaScript processar
+                return parseFloat(valor.toString().replace(',', '.')) || 0;
+            }
+
+            // Função para formatar preço para envio (com vírgula)
+            function formatarPrecoParaEnvio(valor) {
+                return valor.toFixed(2).replace('.', ',');
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // FORNECEDOR -> DATA ENTREGA
+            // ═══════════════════════════════════════════════════════════════════
+            selectFornecedor.addEventListener('change', function() {
+                const option = this.options[this.selectedIndex];
+                const tempoEntrega = parseInt(option.getAttribute('data-tempo')) || 0;
+
+                if (tempoEntrega > 0) {
+                    const dataEntrega = new Date();
+                    dataEntrega.setDate(dataEntrega.getDate() + tempoEntrega);
+                    inputDataEntrega.value = formatarDataInput(dataEntrega);
+                    sugestaoEntrega.innerHTML = '<i class="bi bi-check-circle me-1"></i>Estimativa: ' + tempoEntrega + ' dias (' + formatarDataPT(dataEntrega) + ')';
+                } else {
+                    sugestaoEntrega.textContent = '';
+                }
+
+                validarFormulario();
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // CALCULAR PREÇO MÉDIO
+            // ═══════════════════════════════════════════════════════════════════
+            btnPreencherAuto.addEventListener('click', function() {
+                if (CONFIG.valorOrcamento <= 0 || CONFIG.totalUnidades <= 0) {
+                    alert('Não é possível calcular: valor ou unidades inválidos.');
+                    return;
+                }
+
+                const precoMedio = CONFIG.valorOrcamento / CONFIG.totalUnidades;
+
+                if (!confirm('Calcular preço médio por unidade?\n\nValor do orçamento: ' + formatarMoeda(CONFIG.valorOrcamento) + '\nTotal de unidades: ' + CONFIG.totalUnidades + '\nPreço médio: ' + formatarMoeda(precoMedio) + '\n\nEste valor será aplicado a todos os artigos.')) {
+                    return;
+                }
+
+                linhasArtigo.forEach(function(linha) {
+                    const qtdReq = parseInt(linha.getAttribute('data-qtd-req')) || 1;
+                    const inputQtd = linha.querySelector('.input-qtd');
+                    const inputPreco = linha.querySelector('.input-preco');
+
+                    inputQtd.value = qtdReq;
+                    // Usar vírgula como separador decimal
+                    inputPreco.value = formatarPrecoParaEnvio(precoMedio);
+                });
+
+                calcularTotais();
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // CALCULAR AO DIGITAR
+            // ═══════════════════════════════════════════════════════════════════
+            document.getElementById('tabelaArtigos').addEventListener('input', function(e) {
+                if (e.target.classList.contains('input-qtd') || e.target.classList.contains('input-preco')) {
+                    calcularTotais();
+                }
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // FUNÇÃO: CALCULAR TOTAIS
+            // ═══════════════════════════════════════════════════════════════════
+            function calcularTotais() {
+                let totalQtd = 0;
+                let totalValor = 0;
+                let todosPreenchidos = true;
+
+                linhasArtigo.forEach(function(linha) {
+                    const inputQtd = linha.querySelector('.input-qtd');
+                    const inputPreco = linha.querySelector('.input-preco');
+                    const subtotalEl = linha.querySelector('.subtotal');
+
+                    const qtd = parseInt(inputQtd.value) || 0;
+                    const preco = parsePreco(inputPreco.value); // Usar função que aceita vírgula
+                    const subtotal = qtd * preco;
+
+                    totalQtd += qtd;
+                    totalValor += subtotal;
+
+                    if (preco > 0 && qtd > 0) {
+                        subtotalEl.textContent = formatarMoeda(subtotal);
+                    } else {
+                        subtotalEl.textContent = '—';
+                        todosPreenchidos = false;
+                    }
+                });
+
+                // Atualizar displays
+                totalQtdAprov.textContent = totalQtd;
+                totalValorTabela.textContent = formatarMoeda(totalValor);
+                valorTotalDisplay.textContent = formatarMoeda(totalValor);
+
+                // Calcular diferença
+                const diferenca = totalValor - CONFIG.valorOrcamento;
+                const percentual = CONFIG.valorOrcamento > 0 ? (diferenca / CONFIG.valorOrcamento) * 100 : 0;
+
+                // Atualizar badge de diferença
+                diferencaDisplay.classList.remove('bg-secondary', 'bg-success', 'bg-danger', 'bg-warning');
+
+                if (!todosPreenchidos) {
+                    diferencaDisplay.classList.add('bg-secondary');
+                    diferencaDisplay.textContent = 'Preencha os valores';
+                } else if (Math.abs(diferenca) < 0.01) {
+                    diferencaDisplay.classList.add('bg-success');
+                    diferencaDisplay.innerHTML = '<i class="bi bi-check-circle me-1"></i>Igual ao orçamento';
+                } else if (diferenca > 0) {
+                    diferencaDisplay.classList.add('bg-danger');
+                    diferencaDisplay.textContent = '+' + formatarMoeda(diferenca) + ' acima';
+                } else {
+                    diferencaDisplay.classList.add('bg-success');
+                    diferencaDisplay.textContent = formatarMoeda(diferenca) + ' abaixo';
+                }
+
+                // Alerta de diferença grande
+                if (todosPreenchidos && Math.abs(percentual) > CONFIG.limiteAlertaPercentual) {
+                    alertaDiferencaGrande.classList.remove('d-none');
+                    msgDiferencaGrande.textContent = 'Diferença de ' + Math.abs(percentual).toFixed(1) + '% (' + formatarMoeda(Math.abs(diferenca)) + ')';
+                } else {
+                    alertaDiferencaGrande.classList.add('d-none');
+                }
+
+                // Alerta incompleto
+                if (todosPreenchidos) {
+                    alertaIncompleto.classList.add('d-none');
+                } else {
+                    alertaIncompleto.classList.remove('d-none');
+                }
+
+                validarFormulario();
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // VALIDAÇÃO CHECKBOXES
+            // ═══════════════════════════════════════════════════════════════════
+            checkboxes.forEach(function(cb) {
+                cb.addEventListener('change', validarFormulario);
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // VALIDAR FORMULÁRIO
+            // ═══════════════════════════════════════════════════════════════════
+            function validarFormulario() {
+                const fornecedorOk = selectFornecedor.value !== '';
+
+                let artigosOk = true;
+                let artigosSemPreco = 0;
+                linhasArtigo.forEach(function(linha) {
+                    const qtd = parseInt(linha.querySelector('.input-qtd').value) || 0;
+                    const preco = parsePreco(linha.querySelector('.input-preco').value); // Usar função que aceita vírgula
+
+                    if (qtd <= 0 || preco <= 0) {
+                        artigosOk = false;
+                        if (preco <= 0) artigosSemPreco++;
+                    }
+                });
+
+                let checksOk = true;
+                checkboxes.forEach(function(cb) {
+                    if (!cb.checked) checksOk = false;
+                });
+
+                const formValido = fornecedorOk && artigosOk && checksOk;
+
+                btnAprovar.disabled = !formValido;
+
+                // NOVO: Feedback visual detalhado
+                if (!fornecedorOk) {
+                    alertaIncompleto.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Selecione um fornecedor';
+                    alertaIncompleto.classList.remove('d-none', 'alert-success');
+                    alertaIncompleto.classList.add('alert-warning');
+                } else if (artigosSemPreco > 0) {
+                    alertaIncompleto.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Preencha o preço de ' + artigosSemPreco + ' artigo(s)';
+                    alertaIncompleto.classList.remove('d-none', 'alert-success');
+                    alertaIncompleto.classList.add('alert-warning');
+                } else if (!checksOk) {
+                    alertaIncompleto.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Marque todas as confirmações';
+                    alertaIncompleto.classList.remove('d-none', 'alert-success');
+                    alertaIncompleto.classList.add('alert-info');
+                } else {
+                    alertaIncompleto.innerHTML = '<i class="bi bi-check-circle me-1"></i>Pronto para aprovar!';
+                    alertaIncompleto.classList.remove('d-none', 'alert-warning', 'alert-info');
+                    alertaIncompleto.classList.add('alert-success');
+                }
+
+                // Estilo do botão
+                if (formValido) {
+                    btnAprovar.classList.remove('btn-secondary');
+                    btnAprovar.classList.add('btn-success');
+                } else {
+                    btnAprovar.classList.remove('btn-success');
+                    btnAprovar.classList.add('btn-secondary');
+                }
+
+                return formValido;
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SUBMISSÃO - Converter valores antes de enviar
+            // ═══════════════════════════════════════════════════════════════════
+            form.addEventListener('submit', function(e) {
+                if (!validarFormulario()) {
+                    e.preventDefault();
+                    alert('Por favor, preencha todos os campos obrigatórios e confirme as opções.');
+                    return false;
+                }
+
+                // IMPORTANTE: Converter pontos para vírgulas nos preços antes de submeter
+                document.querySelectorAll('.input-preco').forEach(function(input) {
+                    const valor = parsePreco(input.value);
+                    input.value = formatarPrecoParaEnvio(valor);
+                });
+
+                const fornecedor = selectFornecedor.options[selectFornecedor.selectedIndex].text.trim();
+                const valorFinal = valorTotalDisplay.textContent;
+
+                const confirmacao = confirm(
+                    'Confirmar aprovação da encomenda?\n\n' +
+                    'Fornecedor: ' + fornecedor + '\n' +
+                    'Valor Total: ' + valorFinal + '\n\n' +
+                    'A encomenda passará para o estado CONFIRMADA.'
+                );
+
+                if (!confirmacao) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                btnAprovar.disabled = true;
+                btnAprovar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>A processar...';
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // INICIALIZAÇÃO
+            // ═══════════════════════════════════════════════════════════════════
+            calcularTotais();
+        });
+    </script>
+
+    <style>
+        #btnAprovar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+        }
+        #btnAprovar:not(:disabled) {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+        }
+        #btnAprovar:not(:disabled):hover {
+            background-color: #157347 !important;
+            border-color: #146c43 !important;
+        }
+    </style>
+}

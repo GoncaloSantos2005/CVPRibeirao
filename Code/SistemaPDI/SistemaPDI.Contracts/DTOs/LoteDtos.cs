@@ -1,7 +1,7 @@
 namespace SistemaPDI.Contracts.DTOs
 {
     /// <summary>
-    /// DTO para criar um novo lote durante a receção de stock.
+    /// DTO para criar um novo lote durante a receção física de stock (PN1).
     /// </summary>
     public record CriarLoteDto(
         int ArtigoId,
@@ -16,23 +16,25 @@ namespace SistemaPDI.Contracts.DTOs
     /// DTO para atualizar um lote existente.
     /// </summary>
     public record AtualizarLoteDto(
-        DateTime DataValidade,
-        decimal PrecoUnitario,
+        DateTime? DataValidade,
+        decimal? PrecoUnitario,
         int? LocalizacaoId,
         int QtdDisponivel
     );
 
     /// <summary>
-    /// DTO de leitura de um lote.
+    /// DTO de leitura de um lote (Atualizado para suportar lotes Pendentes/Em Trânsito).
     /// </summary>
     public record LoteDto(
         int Id,
         int ArtigoId,
         string NomeArtigo,
         string SKU,
-        string NumeroLote,
-        DateTime DataValidade,
-        decimal PrecoUnitario,
+        string? UrlImagemArtigo,
+        string? NumeroLote,
+        DateTime? DataValidade,
+        decimal? PrecoUnitario,
+
         int QtdDisponivel,
         int QtdReservada,
         int QtdRealmenteDisponivel,
@@ -41,7 +43,8 @@ namespace SistemaPDI.Contracts.DTOs
         bool Ativo,
         bool EstaExpirado,
         bool ValidadeProxima,
-        DateTime CriadoEm
+        DateTime CriadoEm,
+        bool EmTrafico
     );
 
     /// <summary>

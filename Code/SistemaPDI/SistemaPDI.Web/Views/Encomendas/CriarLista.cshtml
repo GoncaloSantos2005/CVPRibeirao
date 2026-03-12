@@ -1,0 +1,471 @@
+﻿@using SistemaPDI.Web.Models
+@model CriarListaViewModel
+@{
+    var modoEdicao = (bool)(ViewBag.ModoEdicao ?? false);
+    var encomenda = ViewBag.Encomenda as EncomendaDto;
+    ViewData["Title"] = modoEdicao ? $"Editar Lista - {encomenda?.NumeroEncomenda}" : "Nova Lista de Encomenda";
+    
+    var artigos = ViewBag.Artigos as List<ArtigoDto> ?? new List<ArtigoDto>();
+    var artigosStockBaixo = ViewBag.ArtigosStockBaixo as List<ArtigoDto> ?? new List<ArtigoDto>();
+    var artigosStockCritico = ViewBag.ArtigosStockCritico as List<ArtigoDto> ?? new List<ArtigoDto>();
+    
+    // Preparar linhas existentes para JS
+    var linhasExistentes = Model?.Linhas ?? new List<LinhaListaViewModel>();
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar às Encomendas
+    </a>
+    <h4 class="mt-2 text-dark">
+        @if (modoEdicao)
+        {
+            <i class="bi bi-pencil-square me-2"></i>@:Editar Lista - @encomenda?.NumeroEncomenda
+        }
+        else
+        {
+            <i class="bi bi-list-check me-2"></i>@:Nova Lista de Encomenda
+        }
+    </h4>
+    <p class="text-muted mb-0" style="font-size: 13px;">
+        @if (modoEdicao)
+        {
+            <text>Corrija os artigos e quantidades da encomenda</text>
+        }
+        else
+        {
+            <text>Selecione os artigos que necessita encomendar</text>
+        }
+    </p>
+</div>
+
+@* ALERTA DE REJEIÇÃO (se aplicável) *@
+@if (modoEdicao && !string.IsNullOrEmpty(encomenda?.MotivoRejeicao))
+{
+    <div class="alert alert-danger border-0 shadow-sm mb-4">
+        <div class="d-flex">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
+            <div>
+                <strong>Esta encomenda foi rejeitada</strong>
+                <p class="mb-1">@encomenda.MotivoRejeicao</p>
+                @if (!string.IsNullOrEmpty(encomenda.RejeitadoPor))
+                {
+                    <small class="text-muted">
+                        Por @encomenda.RejeitadoPor
+                        @if (encomenda.RejeitadoEm.HasValue)
+                        {
+                            <text> em @encomenda.RejeitadoEm.Value.ToString("dd/MM/yyyy HH:mm")</text>
+                        }
+                    </small>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<form asp-action="@(modoEdicao ? "EditarLista" : "CriarLista")" 
+      asp-route-id="@(modoEdicao ? encomenda?.Id : null)" 
+      method="post" id="formCriarLista">
+    
+    <div class="row">
+        @* ══════════════════════════════════════════════════════════════════════ *@
+        @* COLUNA ESQUERDA: SUGESTÕES *@
+        @* ══════════════════════════════════════════════════════════════════════ *@
+        <div class="col-lg-5 mb-4">
+            @* ARTIGOS EM STOCK CRÍTICO *@
+            @if (artigosStockCritico.Any())
+            {
+                <div class="card border-0 shadow-sm border-start border-danger border-4 mb-4">
+                    <div class="card-header bg-danger bg-opacity-10 border-0">
+                        <h6 class="mb-0 text-danger">
+                            <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                            Stock CRÍTICO (@artigosStockCritico.Count)
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var artigo in artigosStockCritico.OrderBy(a => a.StockFisico).Take(5))
+                            {
+                                var falta = artigo.StockMinimo - artigo.StockFisico;
+                                var qtdSugerida = Math.Max(falta, artigo.StockMinimo);
+
+                                <div class="list-group-item border-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold">@artigo.Nome</div>
+                                            <small class="text-muted">@artigo.SKU</small>
+                                            <div class="mt-1">
+                                                <span class="badge bg-danger">Stock: @artigo.StockFisico</span>
+                                                <span class="text-muted small ms-2">Sugestão: @qtdSugerida un.</span>
+                                            </div>
+                                        </div>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger btn-adicionar-sugestao"
+                                                data-artigo-id="@artigo.Id"
+                                                data-quantidade="@qtdSugerida">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* ARTIGOS EM STOCK BAIXO *@
+            @if (artigosStockBaixo.Any())
+            {
+                <div class="card border-0 shadow-sm border-start border-warning border-4 mb-4">
+                    <div class="card-header bg-warning bg-opacity-10 border-0">
+                        <h6 class="mb-0 text-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Stock BAIXO (@artigosStockBaixo.Count)
+                        </h6>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                        <div class="list-group list-group-flush">
+                            @foreach (var artigo in artigosStockBaixo.OrderBy(a => a.StockFisico).Take(8))
+                            {
+                                var falta = artigo.StockMinimo - artigo.StockFisico;
+                                var qtdSugerida = Math.Max(falta, artigo.StockMinimo);
+
+                                <div class="list-group-item border-0 py-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <div class="small fw-semibold">@artigo.Nome</div>
+                                            <small class="text-muted">Stock: @artigo.StockFisico · Sug: @qtdSugerida</small>
+                                        </div>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-warning btn-adicionar-sugestao"
+                                                data-artigo-id="@artigo.Id"
+                                                data-quantidade="@qtdSugerida">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (!artigosStockCritico.Any() && !artigosStockBaixo.Any())
+            {
+                <div class="alert alert-success border-0">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Todos os artigos estão com stock adequado.
+                </div>
+            }
+
+            @* OBSERVAÇÕES *@
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>Observações</h6>
+                </div>
+                <div class="card-body">
+                    <textarea asp-for="Observacoes" class="form-control" rows="3"
+                              placeholder="Notas sobre a encomenda..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        @* ══════════════════════════════════════════════════════════════════════ *@
+        @* COLUNA DIREITA: LISTA DE ARTIGOS *@
+        @* ══════════════════════════════════════════════════════════════════════ *@
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-box-seam me-2"></i>Artigos da Lista
+                    </h6>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnAdicionarManual">
+                            <i class="bi bi-plus-lg me-1"></i><span class="d-none d-sm-inline">Adicionar</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="btnLimparLista">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="containerLinhas">
+                        <div class="text-center text-muted py-4" id="alertVazio">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <p class="mb-0">Nenhum artigo adicionado</p>
+                            <small>Use as sugestões ou clique em "Adicionar"</small>
+                        </div>
+                    </div>
+
+                    <template id="templateLinha">
+                        <div class="card mb-2 linha-artigo border">
+                            <div class="card-body py-2 px-3">
+                                <div class="row align-items-center g-2">
+                                    <div class="col-12 col-md-6">
+                                        <select class="form-select form-select-sm select-artigo" required>
+                                            <option value="">-- Selecione --</option>
+                                        </select>
+                                        <small class="info-stock text-muted"></small>
+                                    </div>
+                                    <div class="col-8 col-md-4">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">Qtd</span>
+                                            <input type="number" class="form-control input-quantidade" min="1" value="1" required />
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2">
+                                        <button type="button" class="btn btn-outline-danger btn-sm w-100 btn-remover-linha">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="card-footer bg-light border-0">
+                    <div class="d-flex justify-content-between align-items-center small">
+                        <div>
+                            <strong id="totalArtigos">0</strong> artigo(s) · 
+                            <strong id="totalUnidades">0</strong> unidades
+                        </div>
+                        <div>
+                            <span class="badge bg-danger" id="badgeCriticos">0</span>
+                            <span class="badge bg-warning text-dark" id="badgeBaixos">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="d-flex justify-content-between">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg me-1"></i>Cancelar
+        </a>
+        <button type="submit" class="btn btn-cvp" id="btnSubmit" disabled>
+            <i class="bi bi-check-lg me-1"></i>
+            @(modoEdicao ? "Guardar Alterações" : "Criar Lista")
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        let contadorLinhas = 0;
+        const artigosAdicionados = new Set();
+
+        const artigosDisponiveis = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            artigos.Where(a => a.Ativo).OrderBy(a => a.Nome).Select(a => new {
+                id = a.Id,
+                nome = a.Nome,
+                sku = a.SKU,
+                stockFisico = a.StockFisico,
+                stockMinimo = a.StockMinimo,
+                stockCritico = a.StockCritico
+            })
+        ));
+
+        // Linhas existentes (modo edição)
+        const linhasExistentes = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            linhasExistentes.Select(l => new { artigoId = l.ArtigoId, quantidade = l.QuantidadeRequisitada })
+        ));
+
+        $(document).ready(function() {
+            // Carregar linhas existentes (modo edição)
+            if (linhasExistentes && linhasExistentes.length > 0) {
+                linhasExistentes.forEach(function(linha) {
+                    adicionarLinha(linha.artigoId, linha.quantidade);
+                });
+            }
+
+            // Adicionar sugestão
+            $('.btn-adicionar-sugestao').click(function() {
+                const artigoId = $(this).data('artigo-id');
+                const quantidade = $(this).data('quantidade');
+
+                if (artigosAdicionados.has(artigoId)) {
+                    alert('Artigo já adicionado!');
+                    return;
+                }
+
+                adicionarLinha(artigoId, quantidade);
+                $(this).prop('disabled', true).html('<i class="bi bi-check"></i>');
+            });
+
+            $('#btnAdicionarManual').click(function() {
+                adicionarLinha();
+            });
+
+            $('#btnLimparLista').click(function() {
+                if (confirm('Limpar toda a lista?')) {
+                    $('#containerLinhas').html(`
+                        <div class="text-center text-muted py-4" id="alertVazio">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <p class="mb-0">Nenhum artigo adicionado</p>
+                        </div>
+                    `);
+                    artigosAdicionados.clear();
+                    contadorLinhas = 0;
+                    $('.btn-adicionar-sugestao').prop('disabled', false).html('<i class="bi bi-plus"></i>');
+                    atualizarResumo();
+                }
+            });
+
+            $(document).on('click', '.btn-remover-linha', function() {
+                const $linha = $(this).closest('.linha-artigo');
+                const artigoId = parseInt($linha.find('.select-artigo').val());
+
+                if (artigoId) {
+                    artigosAdicionados.delete(artigoId);
+                    $(`.btn-adicionar-sugestao[data-artigo-id="${artigoId}"]`)
+                        .prop('disabled', false).html('<i class="bi bi-plus"></i>');
+                }
+
+                $linha.remove();
+                reindexarLinhas();
+                atualizarResumo();
+
+                if ($('.linha-artigo').length === 0) {
+                    $('#containerLinhas').html(`
+                        <div class="text-center text-muted py-4" id="alertVazio">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <p class="mb-0">Nenhum artigo adicionado</p>
+                        </div>
+                    `);
+                }
+            });
+
+            $(document).on('change', '.select-artigo', function() {
+                const $linha = $(this).closest('.linha-artigo');
+                const artigoId = parseInt($(this).val());
+                const oldArtigoId = $linha.data('artigo-id');
+
+                // Remover antigo do set
+                if (oldArtigoId) {
+                    artigosAdicionados.delete(oldArtigoId);
+                }
+
+                if (artigoId) {
+                    if (artigosAdicionados.has(artigoId)) {
+                        alert('Artigo já adicionado!');
+                        $(this).val('');
+                        return;
+                    }
+
+                    artigosAdicionados.add(artigoId);
+                    $linha.data('artigo-id', artigoId);
+
+                    const artigo = artigosDisponiveis.find(a => a.id === artigoId);
+                    if (artigo) {
+                        let stockClass = 'text-success';
+                        if (artigo.stockFisico <= artigo.stockCritico) stockClass = 'text-danger';
+                        else if (artigo.stockFisico <= artigo.stockMinimo) stockClass = 'text-warning';
+                        
+                        $linha.find('.info-stock').html(`<span class="${stockClass}">Stock: ${artigo.stockFisico}</span>`);
+                        
+                        if (artigo.stockFisico < artigo.stockMinimo) {
+                            const sugestao = Math.max(artigo.stockMinimo - artigo.stockFisico, artigo.stockMinimo);
+                            $linha.find('.input-quantidade').val(sugestao);
+                        }
+                    }
+                }
+                atualizarResumo();
+            });
+
+            $(document).on('input', '.input-quantidade', atualizarResumo);
+
+            $('#formCriarLista').submit(function(e) {
+                if ($('.linha-artigo').length === 0) {
+                    e.preventDefault();
+                    alert('Adicione pelo menos um artigo!');
+                    return false;
+                }
+
+                let todosOk = true;
+                $('.linha-artigo').each(function() {
+                    if (!$(this).find('.select-artigo').val()) {
+                        todosOk = false;
+                        return false;
+                    }
+                });
+
+                if (!todosOk) {
+                    e.preventDefault();
+                    alert('Selecione um artigo em todas as linhas!');
+                    return false;
+                }
+
+                return true;
+            });
+        });
+
+        function adicionarLinha(artigoId = null, quantidade = 1) {
+            $('#alertVazio').remove();
+
+            const $novaLinha = $($('#templateLinha').html());
+            const index = contadorLinhas;
+
+            $novaLinha.attr('data-index', index);
+            $novaLinha.find('.select-artigo').attr('name', `Linhas[${index}].ArtigoId`);
+            $novaLinha.find('.input-quantidade').attr('name', `Linhas[${index}].QuantidadeRequisitada`);
+
+            const $select = $novaLinha.find('.select-artigo');
+            artigosDisponiveis.forEach(function(artigo) {
+                $select.append(`<option value="${artigo.id}">${artigo.nome} (${artigo.sku})</option>`);
+            });
+
+            $('#containerLinhas').append($novaLinha);
+
+            if (artigoId) {
+                $novaLinha.find('.select-artigo').val(artigoId).trigger('change');
+                $novaLinha.find('.input-quantidade').val(quantidade);
+                artigosAdicionados.add(artigoId);
+                $novaLinha.data('artigo-id', artigoId);
+                
+                // Desabilitar botão de sugestão
+                $(`.btn-adicionar-sugestao[data-artigo-id="${artigoId}"]`)
+                    .prop('disabled', true).html('<i class="bi bi-check"></i>');
+            }
+
+            contadorLinhas++;
+            atualizarResumo();
+        }
+
+        function reindexarLinhas() {
+            $('.linha-artigo').each(function(index) {
+                $(this).attr('data-index', index);
+                $(this).find('.select-artigo').attr('name', `Linhas[${index}].ArtigoId`);
+                $(this).find('.input-quantidade').attr('name', `Linhas[${index}].QuantidadeRequisitada`);
+            });
+            contadorLinhas = $('.linha-artigo').length;
+        }
+
+        function atualizarResumo() {
+            let total = 0, unidades = 0, criticos = 0, baixos = 0;
+
+            $('.linha-artigo').each(function() {
+                const artigoId = parseInt($(this).find('.select-artigo').val());
+                if (artigoId) {
+                    total++;
+                    unidades += parseInt($(this).find('.input-quantidade').val()) || 0;
+                    
+                    const artigo = artigosDisponiveis.find(a => a.id === artigoId);
+                    if (artigo) {
+                        if (artigo.stockFisico <= artigo.stockCritico) criticos++;
+                        else if (artigo.stockFisico <= artigo.stockMinimo) baixos++;
+                    }
+                }
+            });
+
+            $('#totalArtigos').text(total);
+            $('#totalUnidades').text(unidades);
+            $('#badgeCriticos').text(criticos + ' críticos');
+            $('#badgeBaixos').text(baixos + ' baixos');
+            $('#btnSubmit').prop('disabled', total === 0);
+        }
+    </script>
+}

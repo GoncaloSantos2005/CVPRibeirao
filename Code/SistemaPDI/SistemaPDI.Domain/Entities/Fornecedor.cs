@@ -61,5 +61,9 @@
 
         /// <summary>Data da última atualização.</summary>
         public DateTime? AtualizadoEm { get; set; }
+
+        // Relacionamentos
+        public ICollection<Encomenda> Encomendas { get; set; } = new List<Encomenda>();
+        //public ICollection<HistoricoPreco> HistoricosPreco { get; set; } = new List<HistoricoPreco>();
     }
 }

@@ -39,6 +39,9 @@
         /// <summary>Quantidade reservada/pendente de entrega.</summary>
         public int StockPendente { get; set; } = 0;
 
+        /// <summary>Stock total = StockFisico + StockVirtual.</summary>
+        public int StockTotal => StockFisico + StockVirtual;
+
         /// <summary>Limite mínimo de stock (alerta amarelo).</summary>
         public int StockMinimo { get; set; } = 10;
 
@@ -70,23 +73,15 @@
         /// <summary>Nome do utilizador que desativou o artigo.</summary>
         public string? DesativadoPor { get; set; }
 
-        // ── Navegacao futura ──────────────────────────────────────────────────
-        // public ICollection<Lote> Lotes { get; set; } = new List<Lote>();
+        // ── Navegacao ──────────────────────────────────────────────────
+        public ICollection<Lote> Lotes { get; set; } = new List<Lote>();
 
         // ── Metodos de Dominio ────────────────────────────────────────────────
 
         /// <summary>
-        /// Recalcula o StockVirtual = StockFisico + StockPendente.
-        /// </summary>
-        public void RecalcularStockVirtual()
-        {
-            StockVirtual = StockFisico + StockPendente;
-        }
-
-        /// <summary>
         /// Verifica se necessita reposição (zona amarela).
         /// </summary>
-        public bool NecessitaReposicao() => StockVirtual <= StockMinimo;
+        public bool NecessitaReposicao() => StockVirtual + StockFisico <= StockMinimo;
 
         /// <summary>
         /// Verifica se está em zona crítica (zona vermelha).

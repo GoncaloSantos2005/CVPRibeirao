@@ -33,7 +33,10 @@ namespace SistemaPDI.Infrastructure.Repositories
         {
             return await _context.Artigos
                 .Include(a => a.Categoria)
-                .Where(a => a.Ativo && a.StockVirtual <= a.StockMinimo)
+                .Where(a => a.Ativo
+                    && a.StockFisico > a.StockCritico 
+                    && a.StockFisico <= a.StockMinimo
+                )
                 .AsNoTracking()
                 .ToListAsync();
         }

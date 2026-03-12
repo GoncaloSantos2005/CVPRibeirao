@@ -6,18 +6,23 @@
         string Descricao,
         string SKU,
         string? UrlImagem,
-        string NomeCategoria, 
+        
         int StockFisico,
         int StockVirtual,
+        int StockTotal,
         int StockPendente,
         int StockMinimo,
         int StockCritico,
+
         decimal PrecoMedio,
         decimal UltimoPreco,
+
         DateTime CriadoEm,
         bool Ativo,
+
         bool NecessitaReposicao, 
         bool EstaCritico,
+
         int? CategoriaId,        
         string? CategoriaNome    
     );

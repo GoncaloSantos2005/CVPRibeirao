@@ -1,0 +1,458 @@
+﻿@using SistemaPDI.Web.Models
+@model SubmeterOrcamentoViewModel
+@{
+    ViewData["Title"] = "Submeter Orçamento";
+    var encomenda = ViewBag.Encomenda as EncomendaDto;
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* HEADER *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="mb-4">
+    <a asp-action="Detalhes" asp-route-id="@encomenda.Id" class="text-decoration-none small text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar aos Detalhes
+    </a>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mt-2">
+        <div>
+            <h4 class="mb-1 text-dark">
+                <i class="bi bi-upload text-warning me-2"></i>
+                Submeter Orçamento
+            </h4>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="badge bg-warning text-dark">
+                    <i class="bi bi-upload me-1"></i>ORÇAMENTO
+                </span>
+                <span class="text-muted small">
+                    Encomenda <strong>@encomenda.NumeroEncomenda</strong>
+                    — criada em @encomenda.DataCriacao.ToString("dd/MM/yyyy") por @(encomenda.CriadoPor ?? "Sistema")
+                </span>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Detalhes" asp-route-id="@encomenda.Id" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i>Cancelar
+            </a>
+            <button type="submit" form="formSubmeterOrcamento" class="btn btn-warning" id="btnSubmitTop" disabled>
+                <i class="bi bi-send me-1"></i>Submeter para Aprovação
+            </button>
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* INFORMAÇÕES DA ENCOMENDA *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-info-circle me-2"></i>Encomenda @encomenda.NumeroEncomenda
+            </h6>
+            <span class="badge bg-info">@encomenda.Estado</span>
+        </div>
+    </div>
+    <div class="card-body pt-0">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="card border-0 bg-light text-center py-3">
+                    <span class="text-muted small">Criada em</span>
+                    <strong>@encomenda.DataCriacao.ToString("dd/MM/yyyy")</strong>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 bg-light text-center py-3">
+                    <span class="text-muted small">Linhas</span>
+                    <strong class="fs-4">@encomenda.TotalLinhas</strong>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 bg-light text-center py-3">
+                    <span class="text-muted small">Unidades</span>
+                    <strong class="fs-4 text-primary">@encomenda.TotalArtigosRequisitados</strong>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 bg-light text-center py-3">
+                    <span class="text-muted small">Valor Orçado</span>
+                    <strong class="fs-4 text-warning" id="resumoValorCard">—</strong>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(encomenda.Observacoes))
+        {
+            <hr class="my-3">
+            <p class="mb-0 small text-muted" style="white-space: pre-wrap;">
+                <i class="bi bi-chat-left-text me-1"></i>@encomenda.Observacoes
+            </p>
+        }
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* ARTIGOS REQUISITADOS *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-box-seam me-2"></i>Artigos Requisitados
+            </h6>
+            <span class="badge bg-secondary">@encomenda.TotalLinhas artigo(s)</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Artigo</th>
+                    <th>SKU</th>
+                    <th class="text-center pe-3" style="width:130px;">Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var linha in encomenda.Linhas)
+                {
+                    <tr>
+                        <td class="ps-3 fw-semibold">@linha.ArtigoNome</td>
+                        <td><span class="badge bg-secondary">@linha.ArtigoSKU</span></td>
+                        <td class="text-center pe-3">
+                            <span class="badge bg-primary">@linha.QuantidadeEncomendada un.</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* TUTORIAL *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h6 class="mb-0 fw-bold">
+            <i class="bi bi-lightbulb me-2 text-warning"></i>Como Proceder
+        </h6>
+    </div>
+    <div class="card-body pt-0">
+        <div class="row g-0">
+            <div class="col-md-3 d-flex align-items-start pe-md-4 mb-3 mb-md-0">
+                <div class="icon-circle-sm bg-primary me-3 flex-shrink-0"><span class="text-white fw-bold" style="font-size:11px;">1</span></div>
+                <div><strong class="small d-block">Solicitar orçamentos</strong><small class="text-muted">Peça propostas a pelo menos 3 fornecedores diferentes</small></div>
+            </div>
+            <div class="col-md-3 d-flex align-items-start px-md-4 mb-3 mb-md-0" style="border-left: 1px solid #dee2e6;">
+                <div class="icon-circle-sm bg-info me-3 flex-shrink-0"><span class="text-white fw-bold" style="font-size:11px;">2</span></div>
+                <div><strong class="small d-block">Comparar propostas</strong><small class="text-muted">Avalie preços, prazos de entrega e condições de pagamento</small></div>
+            </div>
+            <div class="col-md-3 d-flex align-items-start px-md-4 mb-3 mb-md-0" style="border-left: 1px solid #dee2e6;">
+                <div class="icon-circle-sm bg-warning me-3 flex-shrink-0"><span class="text-white fw-bold" style="font-size:11px;">3</span></div>
+                <div><strong class="small d-block">Anexar o melhor PDF</strong><small class="text-muted">Faça upload do orçamento mais vantajoso e indique o valor total</small></div>
+            </div>
+            <div class="col-md-3 d-flex align-items-start ps-md-4" style="border-left: 1px solid #dee2e6;">
+                <div class="icon-circle-sm bg-success me-3 flex-shrink-0"><span class="text-white fw-bold" style="font-size:11px;">4</span></div>
+                <div><strong class="small d-block">Submeter para aprovação</strong><small class="text-muted">O Gestor de Logística irá analisar e aprovar ou rejeitar</small></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* FORMULÁRIO *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<form asp-action="SubmeterOrcamento" asp-route-id="@encomenda.Id"
+      method="post" enctype="multipart/form-data" id="formSubmeterOrcamento">
+
+    @* ── ANEXAR PDF ── *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Anexar Orçamento
+            </h6>
+        </div>
+        <div class="card-body pt-0">
+            <div class="mb-3">
+                <label asp-for="OrcamentoPdf" class="form-label small fw-semibold text-muted">
+                    <i class="bi bi-paperclip me-1"></i>Ficheiro PDF *
+                </label>
+                <input asp-for="OrcamentoPdf"
+                       type="file"
+                       class="form-control form-control-lg"
+                       accept=".pdf,application/pdf"
+                       required
+                       id="inputPdf" />
+                <span asp-validation-for="OrcamentoPdf" class="text-danger small"></span>
+                <small class="text-muted">Apenas PDF · Tamanho máximo: 10 MB</small>
+            </div>
+
+            <div id="previewPdf" class="d-none">
+                <div class="d-flex align-items-center gap-3 p-3 rounded border border-success bg-success bg-opacity-10">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-2"></i>
+                    <div>
+                        <strong class="d-block small" id="nomeFicheiro"></strong>
+                        <small class="text-muted" id="tamanhoFicheiro"></small>
+                    </div>
+                    <span class="badge bg-success ms-auto">Pronto</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── VALOR DO ORÇAMENTO ── *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-cash-coin me-2"></i>Valor do Orçamento
+            </h6>
+        </div>
+        <div class="card-body pt-0">
+            <div class="row g-4 align-items-start">
+                <div class="col-md-5">
+                    <label asp-for="ValorOrcamento" class="form-label small fw-semibold text-muted">
+                        Valor Total *
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text fw-bold">€</span>
+                        <input asp-for="ValorOrcamento"
+                               type="number"
+                               step="0.01"
+                               min="0.01"
+                               class="form-control form-control-lg"
+                               placeholder="0,00"
+                               required
+                               id="inputValor" />
+                    </div>
+                    <span asp-validation-for="ValorOrcamento" class="text-danger small"></span>
+                    <small class="text-muted">Com IVA incluído</small>
+                </div>
+
+                <div class="col-md-7">
+                    <p class="form-label small fw-semibold text-muted mb-2">Análise Rápida</p>
+                    <div class="d-flex gap-3">
+                        <div class="card border-0 bg-light text-center px-4 py-2 flex-fill">
+                            <small class="text-muted">Por artigo (média)</small>
+                            <strong class="text-primary" id="valorPorArtigo">—</strong>
+                        </div>
+                        <div class="card border-0 bg-light text-center px-4 py-2 flex-fill">
+                            <small class="text-muted">Por unidade (média)</small>
+                            <strong class="text-primary" id="valorPorUnidade">—</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── OBSERVAÇÕES ── *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-chat-left-text me-2"></i>Observações / Justificativa
+            </h6>
+        </div>
+        <div class="card-body pt-0">
+            <textarea asp-for="Observacoes"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Ex: Escolhi o Fornecedor X porque ofereceu o melhor preço e prazo de entrega de 3 dias úteis..."></textarea>
+            <small class="text-muted">Opcional, mas recomendado — explique por que escolheu este orçamento</small>
+        </div>
+    </div>
+
+    @* ── CHECKLIST DE VERIFICAÇÃO ── *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-check2-square me-2"></i>Verificação Final
+                </h6>
+                <span class="badge bg-light text-dark border" id="checkCount">0 / 4</span>
+            </div>
+        </div>
+        <div class="card-body pt-0 d-flex flex-column gap-2">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-2 px-3">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input check-item" type="checkbox" id="check1" required>
+                        <label class="form-check-label small" for="check1">
+                            Solicitei orçamentos de pelo menos 3 fornecedores
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 bg-light">
+                <div class="card-body py-2 px-3">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input check-item" type="checkbox" id="check2" required>
+                        <label class="form-check-label small" for="check2">
+                            Comparei preços, prazos e condições de pagamento
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 bg-light">
+                <div class="card-body py-2 px-3">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input check-item" type="checkbox" id="check3" required>
+                        <label class="form-check-label small" for="check3">
+                            O orçamento anexado é o mais vantajoso
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 bg-light">
+                <div class="card-body py-2 px-3">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input check-item" type="checkbox" id="check4" required>
+                        <label class="form-check-label small" for="check4">
+                            Verifiquei que o PDF contém todos os artigos requisitados
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── BOTÕES FINAIS ── *@
+    <div class="d-flex justify-content-between mb-5">
+        <a asp-action="Detalhes" asp-route-id="@encomenda.Id" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </a>
+        <button type="submit" class="btn btn-warning btn-lg" id="btnSubmitBottom" disabled>
+            <i class="bi bi-send me-1"></i>Submeter para Aprovação
+        </button>
+    </div>
+</form>
+
+<style>
+    .icon-circle {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    .check-item:checked + label {
+        color: #198754;
+        font-weight: 600;
+    }
+
+    #previewPdf {
+        animation: fadeIn 0.25s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+            const totalArtigos  = @encomenda.TotalLinhas;
+            const totalUnidades = @encomenda.TotalArtigosRequisitados;
+
+            // ── PREVIEW PDF ─────────────────────────────────────────────
+            $('#inputPdf').on('change', function () {
+                const file = this.files[0];
+
+                if (!file) { $('#previewPdf').addClass('d-none'); validarFormulario(); return; }
+
+                if (file.type !== 'application/pdf') {
+                    alert('Apenas ficheiros PDF são permitidos!');
+                    $(this).val(''); $('#previewPdf').addClass('d-none'); validarFormulario(); return;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('O ficheiro é muito grande! Tamanho máximo: 10 MB');
+                    $(this).val(''); $('#previewPdf').addClass('d-none'); validarFormulario(); return;
+                }
+
+                const mb = (file.size / (1024 * 1024)).toFixed(2);
+                $('#nomeFicheiro').text(file.name);
+                $('#tamanhoFicheiro').text(mb + ' MB');
+                $('#previewPdf').removeClass('d-none');
+                validarFormulario();
+            });
+
+            // ── VALOR + MÉDIAS ───────────────────────────────────────────
+            $('#inputValor').on('input', function () {
+                const valor = parseFloat($(this).val()) || 0;
+                const fmt = v => v.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+                if (valor > 0) {
+                    $('#resumoValorCard').text(fmt(valor));
+                    $('#valorPorArtigo').text(fmt(valor / totalArtigos));
+                    $('#valorPorUnidade').text(fmt(valor / totalUnidades));
+                } else {
+                    $('#resumoValorCard, #valorPorArtigo, #valorPorUnidade').text('—');
+                }
+
+                validarFormulario();
+            });
+
+            // ── CONTADOR CHECKLIST ──────────────────────────────────────
+            $('.check-item').on('change', function () {
+                const n = $('.check-item:checked').length;
+                $('#checkCount').text(n + ' / 4');
+                validarFormulario();
+            });
+
+            // ── VALIDAR ──────────────────────────────────────────────────
+            function validarFormulario() {
+                const temPdf   = $('#inputPdf')[0].files.length > 0;
+                const temValor = parseFloat($('#inputValor').val()) > 0;
+                const checks   = $('.check-item:checked').length === 4;
+                const valido   = temPdf && temValor && checks;
+                $('#btnSubmitTop, #btnSubmitBottom').prop('disabled', !valido);
+            }
+
+            // ── CONFIRMAÇÃO ──────────────────────────────────────────────
+            $('#formSubmeterOrcamento').submit(function (e) {
+                const valor = parseFloat($('#inputValor').val());
+                const nome  = $('#nomeFicheiro').text();
+                const fmt   = v => v.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+                const ok = confirm(
+                    `Confirmar submissão?\n\n` +
+                    `Ficheiro: ${nome}\n` +
+                    `Valor: ${fmt(valor)}\n\n` +
+                    `O orçamento será enviado para aprovação do Gestor de Logística.`
+                );
+
+                if (!ok) { e.preventDefault(); return false; }
+
+                $('#btnSubmitTop, #btnSubmitBottom')
+                    .prop('disabled', true)
+                    .html('<span class="spinner-border spinner-border-sm me-2"></span>A enviar...');
+
+                return true;
+            });
+        });
+    </script>
+}

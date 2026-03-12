@@ -64,6 +64,22 @@
   },
   {
     "ContainingType": "SistemaPDI.API.Controllers.ArtigosController",
+    "Method": "Remover",
+    "RelativePath": "api/Artigos/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.ArtigosController",
     "Method": "AtualizarStock",
     "RelativePath": "api/Artigos/{id}/stock",
     "HttpMethod": "PATCH",
@@ -289,6 +305,295 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ObterTodos",
+    "RelativePath": "api/Encomendas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "incluirInativos",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ObterPorId",
+    "RelativePath": "api/Encomendas/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "AprovarEPreencher",
+    "RelativePath": "api/Encomendas/{id}/aprovar-preencher",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.AprovarEPreencherDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "Cancelar",
+    "RelativePath": "api/Encomendas/{id}/cancelar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "SistemaPDI.API.Controllers.CancelarRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ConfirmarEEnviar",
+    "RelativePath": "api/Encomendas/{id}/confirmar-enviar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "GerarPdf",
+    "RelativePath": "api/Encomendas/{id}/gerar-pdf",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "AtualizarLista",
+    "RelativePath": "api/Encomendas/{id}/lista",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.CriarListaDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "MarcarComoRascunho",
+    "RelativePath": "api/Encomendas/{id}/marcar-rascunho",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "Rejeitar",
+    "RelativePath": "api/Encomendas/{id}/rejeitar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "SistemaPDI.API.Controllers.RejeitarRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "SubmeterOrcamento",
+    "RelativePath": "api/Encomendas/{id}/submeter-orcamento",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.SubmeterOrcamentoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ToggleAtivo",
+    "RelativePath": "api/Encomendas/{id}/toggle-ativo",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ObterDropdown",
+    "RelativePath": "api/Encomendas/dropdown",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ObterEnviadas",
+    "RelativePath": "api/Encomendas/enviadas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ObterPorEstado",
+    "RelativePath": "api/Encomendas/estado/{estado}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "estado",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "CriarLista",
+    "RelativePath": "api/Encomendas/lista",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.CriarListaDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ObterMinhas",
+    "RelativePath": "api/Encomendas/minhas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "ObterPendentesAprovacao",
+    "RelativePath": "api/Encomendas/pendentes-aprovacao",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.EncomendasController",
+    "Method": "RegistarRececao",
+    "RelativePath": "api/Encomendas/registar-recepcao",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SistemaPDI.Contracts.DTOs.RegistarRecepcaoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "SistemaPDI.API.Controllers.FornecedoresController",
     "Method": "ObterTodos",
     "RelativePath": "api/Fornecedores",
@@ -423,6 +728,149 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "ObterTodos",
+    "RelativePath": "api/HistoricosPrecos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "ObterPorId",
+    "RelativePath": "api/HistoricosPrecos/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "ObterPorArtigo",
+    "RelativePath": "api/HistoricosPrecos/artigo/{artigoId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "artigoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "CompararFornecedores",
+    "RelativePath": "api/HistoricosPrecos/comparar-fornecedores/{artigoId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "artigoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "ObterPorEncomenda",
+    "RelativePath": "api/HistoricosPrecos/encomenda/{encomendaId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "encomendaId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "ObterEvolucaoPrecos",
+    "RelativePath": "api/HistoricosPrecos/evolucao/{artigoId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "artigoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "ObterPorFornecedor",
+    "RelativePath": "api/HistoricosPrecos/fornecedor/{fornecedorId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fornecedorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "ObterPorPeriodo",
+    "RelativePath": "api/HistoricosPrecos/periodo",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dataInicio",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "dataFim",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SistemaPDI.API.Controllers.HistoricosPrecosController",
+    "Method": "ObterSugestoesPrecos",
+    "RelativePath": "api/HistoricosPrecos/sugestoes",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SistemaPDI.API.Controllers.SugestoesPrecosRequest",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -674,22 +1122,6 @@
         "Name": "request",
         "Type": "SistemaPDI.API.Controllers.ConfirmarSaidaRequest",
         "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "SistemaPDI.API.Controllers.LotesController",
-    "Method": "GetAlertasValidade",
-    "RelativePath": "api/Lotes/alertas-validade",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "dias",
-        "Type": "System.Int32",
-        "IsRequired": false
       }
     ],
     "ReturnTypes": []

@@ -4,21 +4,34 @@
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
     ViewData["Title"] = "Editar Lote";
     var lote = ViewBag.Lote as LoteDto;
+    var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
+    var localizacoes = (ViewBag.Localizacoes as List<LocalizacaoDropdownDto>) ?? new List<LocalizacaoDropdownDto>();
 }
+
+<link rel="stylesheet" href="~/css/lotes-index.css" />
 
 <div class="mb-4">
     <a asp-action="Index" class="text-decoration-none small text-muted">
         <i class="bi bi-arrow-left"></i> Voltar aos Lotes
     </a>
-    <h4 class="fw-bold text-dark mt-2">Editar Lote: <span class="text-primary">@lote?.NumeroLote</span></h4>
+    <h4 class="fw-bold text-dark mt-3">Editar Lote: <span class="text-primary">@lote?.NumeroLote</span></h4>
     <p class="text-muted" style="font-size: 13px;">
-        @lote?.NomeArtigo (@lote?.SKU)
+        @lote?.NomeArtigo (<strong>@lote?.SKU</strong>)
     </p>
 </div>
 
+@if (!isAdmin)
+{
+    <div class="alert alert-info alert-status mb-4">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Aviso:</strong> Como GESTOR, você pode editar a data de validade, preço e localização. 
+        O stock só pode ser modificado pelo Administrador para garantir a integridade dos registos.
+    </div>
+}
+
 <div class="row">
     <div class="col-md-8">
-        <div class="card border-0 shadow-sm p-4">
+        <div class="card detail-card p-4">
             <form asp-action="Editar" asp-route-id="@lote?.Id" method="post">
                 @Html.AntiForgeryToken()
 
@@ -28,50 +41,69 @@
                 <!-- Campos não editáveis (apenas visualização) -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label small fw-semibold text-muted">Número do Lote</label>
-                        <input type="text" class="form-control bg-light" value="@lote?.NumeroLote" disabled />
+                        <label class="form-label">Número do Lote</label>
+                        <input type="text" class="form-control" value="@lote?.NumeroLote" disabled />
                         <small class="text-muted">Não editável</small>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-semibold text-muted">Artigo</label>
-                        <input type="text" class="form-control bg-light" value="@lote?.NomeArtigo" disabled />
+                        <label class="form-label">Artigo</label>
+                        <input type="text" class="form-control" value="@lote?.NomeArtigo" disabled />
                         <small class="text-muted">Não editável</small>
                     </div>
                 </div>
 
-                <hr class="my-3" />
+                <hr class="my-4" />
 
                 <!-- Campos editáveis -->
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label small fw-semibold">Data de Validade <span class="text-danger">*</span></label>
+                        <label class="form-label">Data de Validade <span class="text-danger">*</span></label>
                         <input asp-for="DataValidade" type="date" class="form-control" />
                         <span asp-validation-for="DataValidade" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label small fw-semibold">Preço Unitário (€)</label>
+                        <label class="form-label">Preço Unitário (€)</label>
                         <input asp-for="PrecoUnitario" type="number" step="0.01" class="form-control" min="0" />
                         <span asp-validation-for="PrecoUnitario" class="text-danger small"></span>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Localização</label>
-                        <select asp-for="LocalizacaoId" asp-items="@(ViewBag.Localizacoes as List<SelectListItem>)" class="form-select">
+                    <div class="col-12">
+                        <label class="form-label">Localização</label>
+                        <select name="LocalizacaoId" class="form-select">
                             <option value="">-- Selecione uma localização --</option>
+                            @foreach (var loc in localizacoes)
+                            {
+                                <option value="@loc.Id" selected="@(lote?.LocalizacaoId == loc.Id)">@loc.Label</option>
+                            }
                         </select>
-                        <span asp-validation-for="LocalizacaoId" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label small fw-semibold">Quantidade Disponível</label>
-                        <input asp-for="QtdDisponivel" type="number" class="form-control" min="0" />
+                        <label class="form-label">
+                            Quantidade Disponível
+                            @if (!isAdmin)
+                            {
+                                <span class="badge bg-secondary ms-2">Apenas Admin</span>
+                            }
+                        </label>
+                        <input asp-for="QtdDisponivel" type="number" class="form-control" min="0" disabled="@(!isAdmin)" />
+                        @if (!isAdmin)
+                        {
+                            <input type="hidden" asp-for="QtdDisponivel" />
+                        }
                         <span asp-validation-for="QtdDisponivel" class="text-danger small"></span>
                         @if (lote?.QtdReservada > 0)
                         {
-                            <small class="text-warning">
+                            <small class="text-warning d-block mt-2">
                                 <i class="bi bi-exclamation-triangle"></i> 
                                 Mínimo: @lote.QtdReservada (quantidade reservada)
+                            </small>
+                        }
+                        @if (!isAdmin)
+                        {
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-lock"></i> Este campo está protegido. Apenas o Administrador pode modificar o stock.
                             </small>
                         }
                     </div>
@@ -88,31 +120,31 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card border-0 shadow-sm bg-light">
+        <!-- Informações -->
+        <div class="card detail-card mb-4 bg-light">
+            <div class="detail-card-header bg-white">
+                <h6><i class="bi bi-info-circle me-2"></i>Informações</h6>
+            </div>
             <div class="card-body">
-                <h6 class="fw-bold text-uppercase small text-muted mb-3">
-                    <i class="bi bi-info-circle me-2"></i>Informações
-                </h6>
-
                 <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
                     <span class="small">Quantidade Reservada:</span>
-                    <span class="badge bg-warning text-dark">@lote?.QtdReservada</span>
+                    <span class="badge badge-warning">@lote?.QtdReservada</span>
                 </div>
 
                 <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
                     <span class="small">Realmente Disponível:</span>
-                    <span class="badge bg-success">@lote?.QtdRealmenteDisponivel</span>
+                    <span class="badge badge-active">@lote?.QtdRealmenteDisponivel</span>
                 </div>
 
                 <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
                     <span class="small">Estado:</span>
                     @if (lote?.Ativo == true)
                     {
-                        <span class="badge bg-success">Ativo</span>
+                        <span class="badge badge-active">Ativo</span>
                     }
                     else
                     {
-                        <span class="badge bg-secondary">Inativo</span>
+                        <span class="badge badge-inactive">Inativo</span>
                     }
                 </div>
 
@@ -123,18 +155,26 @@
             </div>
         </div>
 
+        <!-- Status Badges -->
         @if (lote?.EstaExpirado == true)
         {
-            <div class="alert alert-danger mt-3">
+            <div class="alert alert-danger alert-status">
                 <i class="bi bi-x-octagon me-2"></i>
                 <strong>EXPIRADO</strong>
             </div>
         }
         else if (lote?.ValidadeProxima == true)
         {
-            <div class="alert alert-warning mt-3">
+            <div class="alert alert-warning alert-status">
                 <i class="bi bi-exclamation-triangle me-2"></i>
                 <strong>Validade Próxima</strong>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-success alert-status">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Válido</strong>
             </div>
         }
     </div>

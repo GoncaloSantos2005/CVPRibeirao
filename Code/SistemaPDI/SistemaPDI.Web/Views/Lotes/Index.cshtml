@@ -1,25 +1,164 @@
-@using SistemaPDI.Contracts.DTOs
+﻿@using SistemaPDI.Contracts.DTOs
 @model List<LoteDto>
 @{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
-    ViewData["Title"] = "Gest�o de Lotes";
+    ViewData["Title"] = "Gestão de Lotes";
 }
+
+<link rel="stylesheet" href="~/css/lotes-index.css" />
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="mb-0 text-dark">Gest�o de Lotes</h4>
+        <h4 class="mb-0 text-dark">Gestão de Lotes</h4>
         <p class="text-muted mb-0" style="font-size: 13px;">Controlo de lotes, validades e rastreabilidade FEFO.</p>
     </div>
-    <a asp-action="Criar" class="btn btn-cvp">
+    <a asp-action="Criar" class="btn btn-cvp" style="background-color: #dc3545; color: white;">
         <i class="bi bi-plus-lg me-1"></i> Novo Lote
     </a>
 </div>
 
-<div class="mb-3 d-flex gap-2">
-    <a asp-action="Index" class="btn btn-sm btn-outline-secondary active">Todos</a>
-    <a asp-action="AlertasValidade" class="btn btn-sm btn-outline-warning">
-        <i class="bi bi-exclamation-triangle me-1"></i> Alertas Validade
-    </a>
+<!-- STAT CARDS -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <a asp-action="Index" class="text-decoration-none">
+            <div class="card border-0 shadow-sm border-start border-primary border-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Total de Lotes</p>
+                            <h3 class="mb-0">@Model.Count</h3>
+                        </div>
+                        <div class="icon-circle bg-primary bg-opacity-10">
+                            <i class="bi bi-boxes text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a asp-action="Index" asp-route-filtro="emtrafico" class="text-decoration-none">
+            <div class="card border-0 shadow-sm border-start border-info border-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Em Trânsito</p>
+                            <h3 class="mb-0">@Model.Count(l => l.EmTrafico)</h3>
+                        </div>
+                        <div class="icon-circle bg-info bg-opacity-10">
+                            <i class="bi bi-truck text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a asp-action="Index" asp-route-validade="expirada" class="text-decoration-none">
+            <div class="card border-0 shadow-sm border-start border-danger border-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Expirados</p>
+                            <h3 class="mb-0">@Model.Count(l => l.EstaExpirado)</h3>
+                        </div>
+                        <div class="icon-circle bg-danger bg-opacity-10">
+                            <i class="bi bi-exclamation-triangle text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a asp-action="Index" asp-route-validade="proxima" class="text-decoration-none">
+            <div class="card border-0 shadow-sm border-start border-warning border-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Validade Próxima</p>
+                            <h3 class="mb-0">@Model.Count(l => l.ValidadeProxima && !l.EstaExpirado)</h3>
+                        </div>
+                        <div class="icon-circle bg-warning bg-opacity-10">
+                            <i class="bi bi-clock text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+@* Barra de filtros *@
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            
+            @* Pesquisa por Artigo (nome ou SKU) *@
+            <div class="col-md-3">
+                <label class="form-label small text-muted">Artigo</label>
+                <input type="text" 
+                       name="artigo" 
+                       class="form-control form-control-sm" 
+                       placeholder="Nome ou SKU..." 
+                       value="@ViewData["FiltroArtigo"]" />
+            </div>
+
+            @* Pesquisa por Número de Lote *@
+            <div class="col-md-3">
+                <label class="form-label small text-muted">Número de Lote</label>
+                <input type="text" 
+                       name="numeroLote" 
+                       class="form-control form-control-sm" 
+                       placeholder="Ex: L-2026-001..." 
+                       value="@ViewData["FiltroNumeroLote"]" />
+            </div>
+
+            @* Filtro por Data de Validade *@
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Validade</label>
+                <select name="validade" class="form-select form-select-sm">
+                    <option value="">Todas</option>
+                    <option value="proxima" selected="@(ViewData["FiltroValidade"]?.ToString() == "proxima")">
+                        Próxima (15 dias)
+                    </option>
+                    <option value="expirada" selected="@(ViewData["FiltroValidade"]?.ToString() == "expirada")">
+                        Expiradas
+                    </option>
+                    <option value="valida" selected="@(ViewData["FiltroValidade"]?.ToString() == "valida")">
+                        Válidas
+                    </option>
+                </select>
+            </div>
+
+            @* Filtro por Localização *@
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Localização</label>
+                <select name="localizacaoId" class="form-select form-select-sm">
+                    <option value="">Todas</option>
+                    @foreach (var loc in ViewBag.Localizacoes ?? new List<LocalizacaoDropdownDto>())
+                    {
+                        <option value="@loc.Id" selected="@(ViewData["FiltroLocalizacaoId"]?.ToString() == loc.Id.ToString())">
+                            @loc.Label
+                        </option>
+                    }
+                </select>
+            </div>
+
+            @* Botões de ação *@
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-sm btn-cvp flex-fill">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="card p-0 overflow-hidden shadow-sm border-0">
@@ -28,13 +167,13 @@
             <thead class="table-light">
                 <tr>
                     <th class="ps-3">Artigo</th>
-                    <th>N� Lote</th>
+                    <th>Nº Lote</th>
                     <th class="text-center">Validade</th>
-                    <th class="text-center">Dispon�vel</th>
-                    <th class="text-center">Reservado</th>
-                    <th>Localiza��o</th>
+                    <th class="text-center">Disponível / Físico</th>
+                    <th class="text-center">Reservado / Virtual</th>
+                    <th>Localização</th>
                     <th class="text-center">Estado</th>
-                    <th class="text-end pe-3">A��es</th>
+                    <th class="text-end pe-3">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,7 +182,7 @@
                     <tr>
                         <td colspan="8" class="text-center py-5 text-muted">
                             <i class="bi bi-box-seam" style="font-size: 2rem;"></i>
-                            <p class="mb-0 mt-2">Nenhum lote encontrado.</p>
+                            <p class="mb-0 mt-2">Nenhum lote encontrado para este filtro.</p>
                         </td>
                     </tr>
                 }
@@ -51,99 +190,184 @@
                 {
                     @foreach (var lote in Model)
                     {
-                        var rowClass = !lote.Ativo ? "table-secondary" : 
-                                       lote.EstaExpirado ? "table-danger" : 
-                                       lote.ValidadeProxima ? "table-warning" : "";
-                        
+                        // 1. Deteção se está Pendente de Entrega
+                        bool isPendente = lote.EmTrafico;
+
+                        // 2. Definição da cor da linha baseada em prioridade
+                        string rowClass = "";
+                        if (!lote.Ativo)
+                        {
+                            rowClass = "row-inactive";
+                        }
+                        else if (isPendente)
+                        {
+                            rowClass = "row-pending";
+                        }
+                        else if (lote.EstaExpirado)
+                        {
+                            rowClass = "row-critical";
+                        }
+                        else if (lote.ValidadeProxima)
+                        {
+                            rowClass = "row-warning";
+                        }
+                        else
+                        {
+                            rowClass = "row-valid";
+                        }
+
                         <tr class="@rowClass">
-                            <td class="ps-3">
-                                <div>
-                                    <span class="fw-semibold text-dark">@lote.NomeArtigo</span>
-                                    <br />
-                                    <small class="text-muted">@lote.SKU</small>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (!string.IsNullOrEmpty(lote.UrlImagemArtigo))
+                                    {
+                                        <img src="@lote.UrlImagemArtigo"
+                                             alt="@lote.NomeArtigo"
+                                             class="rounded"
+                                             style="width: 40px; height: 40px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                             style="width: 40px; height: 40px;">
+                                            <i class="bi bi-image text-muted"></i>
+                                        </div>
+                                    }
+                                    <div>
+                                        <div class="fw-semibold">@lote.NomeArtigo</div>
+                                        <small class="text-muted">@lote.SKU</small>
+                                    </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="badge bg-light text-dark border fw-bold">@lote.NumeroLote</span>
-                            </td>
-                            <td class="text-center">
-                                @if (lote.EstaExpirado)
+                                @if (string.IsNullOrEmpty(lote.NumeroLote))
                                 {
-                                    <span class="badge bg-danger">
+                                    <span class="text-muted fst-italic">A definir</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark border fw-bold">@lote.NumeroLote</span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                @if (isPendente)
+                                {
+                                    <span class="badge badge-pending">
+                                        <i class="bi bi-truck me-1"></i>A CAMINHO
+                                    </span>
+                                }
+                                else if (lote.EstaExpirado)
+                                {
+                                    <span class="badge badge-critical">
                                         <i class="bi bi-x-circle me-1"></i>EXPIRADO
                                     </span>
                                     <br />
-                                    <small class="text-muted">@lote.DataValidade.ToString("dd/MM/yyyy")</small>
+                                    <small class="text-muted">@(lote.DataValidade?.ToString("dd/MM/yyyy") ?? "-")</small>
                                 }
                                 else if (lote.ValidadeProxima)
                                 {
-                                    <span class="badge bg-warning text-dark">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>ATEN��O
+                                    <span class="badge badge-warning">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>ATENÇÃO
                                     </span>
                                     <br />
-                                    <small class="text-muted">@lote.DataValidade.ToString("dd/MM/yyyy")</small>
+                                    <small class="text-muted">@(lote.DataValidade?.ToString("dd/MM/yyyy") ?? "-")</small>
                                 }
                                 else
                                 {
                                     <span class="text-success">
                                         <i class="bi bi-check-circle me-1"></i>
                                     </span>
-                                    <span>@lote.DataValidade.ToString("dd/MM/yyyy")</span>
+                                    <span>@(lote.DataValidade?.ToString("dd/MM/yyyy") ?? "-")</span>
                                 }
                             </td>
+
                             <td class="text-center">
-                                <span class="fw-bold fs-6">@lote.QtdRealmenteDisponivel</span>
-                                <small class="text-muted">/ @lote.QtdDisponivel</small>
-                            </td>
-                            <td class="text-center">
-                                @if (lote.QtdReservada > 0)
+                                @if (isPendente)
                                 {
-                                    <span class="badge bg-info">@lote.QtdReservada</span>
+                                    <span class="text-muted" title="A aguardar receção (PN1)"><i class="bi bi-hourglass-split"></i></span>
                                 }
                                 else
                                 {
-                                    <span class="text-muted">�</span>
+                                    <span class="fw-bold fs-6">@lote.QtdRealmenteDisponivel</span>
+                                    <small class="text-muted">/ @lote.QtdDisponivel</small>
                                 }
                             </td>
+
+                            <td class="text-center">
+                                @if (isPendente)
+                                {
+                                    <span class="badge badge-pending" title="Stock Virtual em Trânsito">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>+ @lote.QtdReservada
+                                    </span>
+                                }
+                                else if (lote.QtdReservada > 0)
+                                {
+                                    <span class="badge bg-secondary" title="Reservado para Picking">
+                                        <i class="bi bi-lock me-1"></i>@lote.QtdReservada
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+
                             <td class="small text-muted">
-                                @if (!string.IsNullOrEmpty(lote.LocalizacaoLabel))
+                                @if (isPendente)
                                 {
-                                    <i class="bi bi-geo-alt me-1"></i>@lote.LocalizacaoLabel
+                                    <span class="text-pending fst-italic"><i class="bi bi-geo-alt me-1"></i>No Fornecedor</span>
+                                }
+                                else if (!string.IsNullOrEmpty(lote.LocalizacaoLabel))
+                                {
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    @lote.LocalizacaoLabel
                                 }
                                 else
                                 {
-                                    <span class="text-muted">�</span>
+                                    <span class="text-muted">—</span>
                                 }
                             </td>
+
                             <td class="text-center">
-                                @if (lote.Ativo)
+                                @if (isPendente)
                                 {
-                                    <span class="badge bg-success">Ativo</span>
+                                    <span class="badge badge-pending">Pendente</span>
+                                }
+                                else if (lote.Ativo)
+                                {
+                                    <span class="badge badge-active">Ativo</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">Inativo</span>
+                                    <span class="badge badge-inactive">Inativo</span>
                                 }
                             </td>
+
                             <td class="text-end pe-3">
                                 <div class="d-flex justify-content-end gap-1">
-                                    <a asp-action="Detalhes" asp-route-id="@lote.Id" 
+                                    <a asp-action="Detalhes" asp-route-id="@lote.Id"
                                        class="btn btn-sm btn-outline-info py-1 px-2 border-0" title="Ver Detalhes">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a asp-action="Editar" asp-route-id="@lote.Id" 
-                                       class="btn btn-sm btn-outline-primary py-1 px-2 border-0" title="Editar">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    @if (lote.Ativo && lote.QtdReservada == 0)
+
+                                    @if (!isPendente)
                                     {
-                                        <form asp-action="Desativar" asp-route-id="@lote.Id" method="post" style="display:inline;"
-                                              onsubmit="return confirm('Desativar este lote?');">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 border-0" title="Desativar">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                        <a asp-action="Editar" asp-route-id="@lote.Id"
+                                           class="btn btn-sm btn-outline-primary py-1 px-2 border-0" title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        @if (lote.Ativo && lote.QtdReservada == 0)
+                                        {
+                                            <form asp-action="Desativar" asp-route-id="@lote.Id" method="post" style="display:inline;"
+                                                  onsubmit="return confirm('Desativar este lote?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 border-0" title="Desativar">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
                                     }
                                 </div>
                             </td>

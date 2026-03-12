@@ -1,7 +1,7 @@
 ﻿@{
     var perfil = ViewBag.Perfil?.ToString();
 
-    if (perfil == "ADMINISTRADOR" || perfil == "GESTOR")
+    if (perfil == "ADMINISTRADOR" || perfil == "GESTOR" || perfil == "GESTOR_FINANCEIRO")
     {
         Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
     }

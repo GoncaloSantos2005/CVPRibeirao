@@ -1,0 +1,690 @@
+﻿@model List<EncomendaDto>
+@{
+    ViewData["Title"] = "Encomendas";
+    var ehAdmin = (bool)(ViewBag.EhAdmin ?? false);
+    var ehGestorLogistica = (bool)(ViewBag.EhGestorLogistica ?? false);
+    var ehGestor = (bool)(ViewBag.EhGestor ?? false);
+    var filtroEstado = ViewBag.FiltroEstado as string;
+    var apenasAtivos = (bool)(ViewBag.ApenasAtivos ?? true);
+    var totais = ViewBag.TotaisPorEstado as Dictionary<string, int> ?? new Dictionary<string, int>();
+    var totalGeral = (int)(ViewBag.TotalGeral ?? 0);
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* HEADER *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
+    <div>
+        <h4 class="mb-0 text-dark">Gestão de Encomendas</h4>
+        <p class="text-muted mb-0 d-none d-sm-block" style="font-size: 13px;">Controle completo do ciclo de encomendas a fornecedores</p>
+    </div>
+    @if (ehGestor || ehAdmin)
+    {
+        <a asp-action="CriarLista" class="btn btn-cvp">
+            <i class="bi bi-plus-lg me-1"></i><span class="d-none d-sm-inline">Nova</span> Encomenda
+        </a>
+    }
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* FILTROS INTERATIVOS *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-2 py-md-3">
+        <div class="d-flex flex-wrap gap-1 gap-md-2 align-items-center">
+            <span class="text-muted small me-1 d-none d-md-inline"><i class="bi bi-funnel"></i> Filtrar:</span>
+            
+            <a asp-action="Index" asp-route-apenasAtivos="@apenasAtivos"
+               class="btn btn-sm @(string.IsNullOrEmpty(filtroEstado) ? "btn-dark" : "btn-outline-secondary")">
+                <span class="d-none d-sm-inline">Todos</span>
+                <span class="d-sm-none">All</span>
+                <span class="badge bg-light text-dark ms-1">@totalGeral</span>
+            </a>
+
+            @{
+                var estadosPrincipais = new[] {
+                    ("LISTA", "secondary", "bi-list-task", "Lista", "List"),
+                    ("RASCUNHO", "info", "bi-file-earmark", "Rascunho", "Rasc"),
+                    ("PENDENTE", "warning", "bi-hourglass-split", "Pendente", "Pend"),
+                    ("CONFIRMADA", "primary", "bi-check-circle", "Confirmada", "Conf"),
+                    ("ENVIADA", "dark", "bi-truck", "Enviada", "Env")
+                };
+
+                var estadosSecundarios = new[] {
+                    ("PARCIAL", "info", "bi-pie-chart", "Parcial", "Parc"),
+                    ("CONCLUIDA", "success", "bi-check-all", "Concluída", "Conc"),
+                    ("CANCELADA", "danger", "bi-x-circle", "Cancelada", "Canc")
+                };
+            }
+
+            @foreach (var (estado, cor, icon, label, labelMobile) in estadosPrincipais)
+            {
+                var count = totais.GetValueOrDefault(estado, 0);
+                <a asp-action="Index" asp-route-estado="@estado" asp-route-apenasAtivos="@apenasAtivos"
+                   class="btn btn-sm @(filtroEstado == estado ? $"btn-{cor}" : $"btn-outline-{cor}")">
+                    <i class="bi @icon d-md-none"></i>
+                    <span class="d-none d-md-inline"><i class="bi @icon me-1"></i>@label</span>
+                    <span class="badge @(filtroEstado == estado ? "bg-light text-dark" : $"bg-{cor} bg-opacity-10 text-{cor}") ms-1">@count</span>
+                </a>
+            }
+
+            <div class="vr mx-1 d-none d-md-block"></div>
+
+            @foreach (var (estado, cor, icon, label, labelMobile) in estadosSecundarios)
+            {
+                var count = totais.GetValueOrDefault(estado, 0);
+                @if (count > 0 || filtroEstado == estado)
+                {
+                    <a asp-action="Index" asp-route-estado="@estado" asp-route-apenasAtivos="@apenasAtivos"
+                       class="btn btn-sm @(filtroEstado == estado ? $"btn-{cor}" : $"btn-outline-{cor}")">
+                        <i class="bi @icon d-md-none"></i>
+                        <span class="d-none d-md-inline"><i class="bi @icon me-1"></i>@label</span>
+                        <span class="badge @(filtroEstado == estado ? "bg-light text-dark" : $"bg-{cor} bg-opacity-10 text-{cor}") ms-1">@count</span>
+                    </a>
+                }
+            }
+
+            <div class="vr mx-1"></div>
+
+            @* TOGGLE - Esconde canceladas quando ativo *@
+            <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" role="switch" id="toggleAtivos" 
+                       @(apenasAtivos ? "checked" : "")>
+                <label class="form-check-label small" for="toggleAtivos">
+                    <span class="d-none d-sm-inline">Ocultar canceladas</span>
+                    <span class="d-sm-none">Ativas</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* ALERTAS *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@{
+    var pendentes = totais.GetValueOrDefault("PENDENTE", 0);
+    var atrasadas = Model.Count(e => e.DataEntregaPrevista.HasValue &&
+        e.DataEntregaPrevista.Value < DateTime.Today &&
+        e.Estado != "CONCLUIDA" && e.Estado != "CANCELADA");
+    var rejeitadas = Model.Where(e => !string.IsNullOrEmpty(e.MotivoRejeicao) && e.Estado == "LISTA").ToList();
+}
+
+@* ALERTA DE REJEITADAS - Com opções de ocultar e cancelar *@
+@if (rejeitadas.Any() && (ehGestor || ehAdmin))
+{
+    <div class="alert alert-danger border-0 shadow-sm mb-4" role="alert" id="alertaRejeitadas">
+        <div class="d-flex flex-column flex-md-row align-items-start gap-3">
+            <div class="d-flex align-items-start flex-grow-1">
+                <i class="bi bi-x-octagon-fill fs-4 me-3 text-danger flex-shrink-0"></i>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong>Encomendas Rejeitadas</strong>
+                        <button type="button" class="btn-close btn-sm" aria-label="Ocultar" 
+                                onclick="document.getElementById('alertaRejeitadas').style.display='none'"></button>
+                    </div>
+                    <p class="mb-2 small">Tem <strong>@rejeitadas.Count</strong> encomenda(s) que foram rejeitadas e precisam de ação:</p>
+                    
+                    @* Lista compacta das rejeitadas *@
+                    <div class="d-flex flex-column gap-2">
+                        @foreach (var enc in rejeitadas.Take(3))
+                        {
+                            <div class="d-flex flex-wrap align-items-center gap-2 bg-white bg-opacity-50 rounded p-2">
+                                <span class="fw-semibold">@enc.NumeroEncomenda</span>
+                                <span class="text-muted small d-none d-sm-inline">— @(enc.MotivoRejeicao?.Length > 40 ? enc.MotivoRejeicao.Substring(0, 40) + "..." : enc.MotivoRejeicao)</span>
+                                <div class="ms-auto d-flex gap-1">
+                                    <a asp-action="EditarLista" asp-route-id="@enc.Id" class="btn btn-sm btn-outline-dark">
+                                        <i class="bi bi-pencil-square me-1"></i><span class="d-none d-sm-inline">Corrigir</span>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" data-bs-target="#modalCancelarRejeitada@(enc.Id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        @if (rejeitadas.Count > 3)
+                        {
+                            <a asp-action="Index" asp-route-estado="LISTA" asp-route-apenasAtivos="@apenasAtivos" 
+                               class="btn btn-sm btn-outline-danger align-self-start">
+                                Ver todas (@rejeitadas.Count) <i class="bi bi-arrow-right"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    @* Modais para cancelar encomendas rejeitadas *@
+    @foreach (var enc in rejeitadas)
+    {
+        <div class="modal fade" id="modalCancelarRejeitada@(enc.Id)" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form asp-action="Cancelar" asp-route-id="@enc.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Cancelar Encomenda Rejeitada</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Cancelar definitivamente a encomenda <strong>@enc.NumeroEncomenda</strong>?</p>
+                            <div class="alert alert-light small mb-3">
+                                <strong>Motivo da rejeição:</strong><br>
+                                @enc.MotivoRejeicao
+                            </div>
+                            <input type="hidden" name="motivo" value="Cancelada após rejeição: @enc.MotivoRejeicao" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não, manter</button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i>Sim, cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@if (pendentes > 0 && ehGestorLogistica)
+{
+    <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
+            <div class="d-flex align-items-center flex-grow-1">
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-warning"></i>
+                <div>
+                    <strong>Ação Necessária!</strong> 
+                    <span class="d-none d-sm-inline">Tem</span> <strong>@pendentes</strong> encomenda(s) aguardando aprovação.
+                </div>
+            </div>
+            <a asp-action="Index" asp-route-estado="PENDENTE" asp-route-apenasAtivos="@apenasAtivos" class="btn btn-warning btn-sm">
+                Ver <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+}
+
+@if (atrasadas > 0)
+{
+    <div class="alert alert-danger border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-clock-fill fs-5 me-2 text-danger"></i>
+            <div>
+                <strong>Atenção!</strong> <strong>@atrasadas</strong> encomenda(s) com atraso.
+            </div>
+        </div>
+    </div>
+}
+
+@* ══════════════════════════════════════════════════════════════════════ *@
+@* TABELA *@
+@* ══════════════════════════════════════════════════════════════════════ *@
+
+@if (!Model.Any())
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+            <h5 class="text-muted">Nenhuma encomenda encontrada</h5>
+            <p class="text-muted mb-3">
+                @if (!string.IsNullOrEmpty(filtroEstado))
+                {
+                    <text>Não existem encomendas com o estado <strong>@filtroEstado</strong>.</text>
+                }
+                else
+                {
+                    <text>Comece por criar uma nova lista de encomenda.</text>
+                }
+            </p>
+            @if (ehGestor || ehAdmin)
+            {
+                <a asp-action="CriarLista" class="btn btn-cvp">
+                    <i class="bi bi-plus-lg me-1"></i> Criar Nova Encomenda
+                </a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle" id="tabelaEncomendas">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Encomenda</th>
+                        <th class="d-none d-md-table-cell">Estado</th>
+                        <th class="d-none d-lg-table-cell">Fornecedor</th>
+                        <th class="d-none d-xl-table-cell">Datas</th>
+                        <th class="text-center d-none d-lg-table-cell">Artigos</th>
+                        <th class="text-end d-none d-md-table-cell">Valor</th>
+                        <th class="text-end pe-3">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var encomenda in Model.OrderByDescending(e => e.DataCriacao))
+                    {
+                        var corEstado = encomenda.Estado switch
+                        {
+                            "LISTA" => "secondary",
+                            "RASCUNHO" => "info",
+                            "PENDENTE" => "warning",
+                            "CONFIRMADA" => "primary",
+                            "ENVIADA" => "dark",
+                            "PARCIAL" => "info",
+                            "CONCLUIDA" => "success",
+                            "CANCELADA" => "danger",
+                            _ => "secondary"
+                        };
+
+                        var iconEstado = encomenda.Estado switch
+                        {
+                            "LISTA" => "bi-list-task",
+                            "RASCUNHO" => "bi-file-earmark",
+                            "PENDENTE" => "bi-hourglass-split",
+                            "CONFIRMADA" => "bi-check-circle",
+                            "ENVIADA" => "bi-truck",
+                            "PARCIAL" => "bi-pie-chart",
+                            "CONCLUIDA" => "bi-check-all",
+                            "CANCELADA" => "bi-x-circle",
+                            _ => "bi-circle"
+                        };
+
+                        var atrasada = encomenda.DataEntregaPrevista.HasValue &&
+                            encomenda.DataEntregaPrevista.Value < DateTime.Today &&
+                            encomenda.Estado != "CONCLUIDA" &&
+                            encomenda.Estado != "CANCELADA";
+
+                        var foiRejeitada = !string.IsNullOrEmpty(encomenda.MotivoRejeicao) && encomenda.Estado == "LISTA";
+
+                        <tr class="@(encomenda.Estado == "CANCELADA" ? "table-secondary" : (foiRejeitada ? "table-danger table-opacity-50" : ""))">
+                            <td class="ps-3">
+                                <div class="d-flex flex-column">
+                                    <div>
+                                        <strong class="text-dark">@encomenda.NumeroEncomenda</strong>
+                                        @* Badge estado visível apenas em mobile *@
+                                        <span class="badge bg-@corEstado d-md-none ms-1">
+                                            <i class="bi @iconEstado"></i>
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">
+                                        @encomenda.DataCriacao.ToString("dd/MM/yy")
+                                        <span class="d-none d-sm-inline">· @(encomenda.CriadoPor ?? "Sistema")</span>
+                                    </small>
+                                    @if (foiRejeitada)
+                                    {
+                                        <span class="badge bg-danger mt-1 align-self-start" style="font-size: 10px;">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>REJEITADA
+                                        </span>
+                                    }
+                                    @* Info extra visível apenas em mobile *@
+                                    <div class="d-md-none mt-1">
+                                        @if (encomenda.ValorTotal > 0)
+                                        {
+                                            <small class="text-success fw-bold">@encomenda.ValorTotal.ToString("C2")</small>
+                                        }
+                                        @if (atrasada)
+                                        {
+                                            <span class="badge bg-danger ms-1" style="font-size: 9px;">ATRASADA</span>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <span class="badge bg-@corEstado">
+                                    <i class="bi @iconEstado me-1"></i>@encomenda.Estado
+                                </span>
+                                @if (atrasada)
+                                {
+                                    <br><span class="badge bg-danger mt-1" style="font-size: 9px;">ATRASADA</span>
+                                }
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                @if (!string.IsNullOrEmpty(encomenda.FornecedorNome))
+                                {
+                                    <span>@encomenda.FornecedorNome</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small fst-italic">Por definir</span>
+                                }
+                            </td>
+                            <td class="d-none d-xl-table-cell">
+                                @if (encomenda.DataEntregaPrevista.HasValue)
+                                {
+                                    <div class="small">
+                                        <span class="text-muted">Prev:</span>
+                                        <span class="@(atrasada ? "text-danger fw-bold" : "")">
+                                            @encomenda.DataEntregaPrevista.Value.ToString("dd/MM/yy")
+                                        </span>
+                                    </div>
+                                }
+                                @if (encomenda.DataEntregaReal.HasValue)
+                                {
+                                    <div class="small text-success">
+                                        <i class="bi bi-check"></i> @encomenda.DataEntregaReal.Value.ToString("dd/MM/yy")
+                                    </div>
+                                }
+                                @if (!encomenda.DataEntregaPrevista.HasValue && !encomenda.DataEntregaReal.HasValue)
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-center d-none d-lg-table-cell">
+                                @if (encomenda.TotalArtigosAprovados > 0)
+                                {
+                                    var percentual = encomenda.PercentualRecebido;
+                                    var corBarra = percentual == 100 ? "success" : percentual > 0 ? "info" : "secondary";
+                                    <div class="d-inline-block" style="min-width: 80px;">
+                                        <div class="progress" style="height: 5px;">
+                                            <div class="progress-bar bg-@corBarra" role="progressbar" style="width: @percentual%;"></div>
+                                        </div>
+                                        <small class="text-muted" style="font-size: 11px;">@encomenda.TotalArtigosRecebidos/@encomenda.TotalArtigosAprovados</small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark border" style="font-size: 11px;">@encomenda.TotalLinhas art.</span>
+                                }
+                            </td>
+                            <td class="text-end d-none d-md-table-cell">
+                                @if (encomenda.ValorTotal > 0)
+                                {
+                                    <strong class="text-success">@encomenda.ValorTotal.ToString("C2")</strong>
+                                }
+                                else if (encomenda.ValorOrcamento.HasValue)
+                                {
+                                    <span class="text-muted small">~@encomenda.ValorOrcamento.Value.ToString("C2")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-end pe-3">
+                                @* MOBILE: Dropdown de ações *@
+                                <div class="d-md-none">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" asp-action="Detalhes" asp-route-id="@encomenda.Id">
+                                                    <i class="bi bi-eye me-2"></i>Ver Detalhes
+                                                </a>
+                                            </li>
+                                            @switch (encomenda.Estado)
+                                            {
+                                                case "LISTA":
+                                                    @if (ehGestor || ehAdmin)
+                                                    {
+                                                        @if (foiRejeitada)
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item text-danger" asp-action="EditarLista" asp-route-id="@encomenda.Id">
+                                                                    <i class="bi bi-pencil-square me-2"></i>Corrigir Lista
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                        else
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item" asp-action="GerarPdf" asp-route-id="@encomenda.Id" target="_blank">
+                                                                    <i class="bi bi-file-pdf me-2"></i>Gerar PDF
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    }
+                                                    break;
+                                                case "RASCUNHO":
+                                                    @if (ehGestor || ehAdmin)
+                                                    {
+                                                        <li>
+                                                            <a class="dropdown-item" asp-action="SubmeterOrcamento" asp-route-id="@encomenda.Id">
+                                                                <i class="bi bi-upload me-2"></i>Submeter Orçamento
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                    break;
+                                                case "PENDENTE":
+                                                    @if (ehGestorLogistica || ehAdmin)
+                                                    {
+                                                        <li>
+                                                            <a class="dropdown-item text-success" asp-action="AprovarPreencher" asp-route-id="@encomenda.Id">
+                                                                <i class="bi bi-check-lg me-2"></i>Aprovar
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                    break;
+                                                case "ENVIADA":
+                                                case "PARCIAL":
+                                                    <li>
+                                                        <a class="dropdown-item text-success" asp-action="RegistarRececao" asp-route-id="@encomenda.Id">
+                                                            <i class="bi bi-box-arrow-in-down me-2"></i>Receber
+                                                        </a>
+                                                    </li>
+                                                    break;
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                @* DESKTOP: Botões inline *@
+                                <div class="d-none d-md-flex justify-content-end gap-1">
+                                    <a asp-action="Detalhes" asp-route-id="@encomenda.Id"
+                                       class="btn btn-sm btn-outline-secondary border-0" title="Ver Detalhes">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    @switch (encomenda.Estado)
+                                    {
+                                        @* Na secção case "LISTA": trocar o link de Detalhes para EditarLista *@
+
+                                        case "LISTA":
+                                            @if (ehGestor || ehAdmin)
+                                            {
+                                                @if (foiRejeitada)
+                                                {
+                                                    @* ENCOMENDA REJEITADA - Botão de editar/corrigir *@
+                                                    <a asp-action="EditarLista" asp-route-id="@encomenda.Id"
+                                                       class="btn btn-sm btn-danger" title="Corrigir e Resubmeter">
+                                                        <i class="bi bi-pencil-square me-1"></i>Corrigir
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-action="GerarPdf" asp-route-id="@encomenda.Id" target="_blank"
+                                                       class="btn btn-sm btn-outline-secondary border-0" title="PDF">
+                                                        <i class="bi bi-file-pdf"></i>
+                                                    </a>
+                                                    <form asp-action="MarcarRascunho" asp-route-id="@encomenda.Id" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Avançar"
+                                                                onclick="return confirm('Marcar como RASCUNHO?')">
+                                                            <i class="bi bi-arrow-right-circle me-1"></i>Avançar
+                                                        </button>
+                                                    </form>
+                                                }
+                                            }
+                                            break;
+
+                                        case "RASCUNHO":
+                                            @if (ehGestor || ehAdmin)
+                                            {
+                                                <a asp-action="SubmeterOrcamento" asp-route-id="@encomenda.Id"
+                                                   class="btn btn-sm btn-outline-primary" title="Submeter">
+                                                    <i class="bi bi-upload me-1"></i>Submeter
+                                                </a>
+                                            }
+                                            break;
+
+                                        case "PENDENTE":
+                                            @if (ehGestorLogistica || ehAdmin)
+                                            {
+                                                <a asp-action="AprovarPreencher" asp-route-id="@encomenda.Id"
+                                                   class="btn btn-sm btn-outline-success" title="Aprovar">
+                                                    <i class="bi bi-check-lg me-1"></i>Aprovar
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger border-0" title="Rejeitar"
+                                                        data-bs-toggle="modal" data-bs-target="#modalRejeitar@(encomenda.Id)">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            }
+                                            break;
+
+                                        case "CONFIRMADA":
+                                            @if (ehGestor || ehAdmin)
+                                            {
+                                                <form asp-action="ConfirmarEnviar" asp-route-id="@encomenda.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="Enviar"
+                                                            onclick="return confirm('Enviar ao fornecedor?')">
+                                                        <i class="bi bi-send me-1"></i>Enviar
+                                                    </button>
+                                                </form>
+                                            }
+                                            break;
+
+                                        case "ENVIADA":
+                                        case "PARCIAL":
+                                            <a asp-action="RegistarRececao" asp-route-id="@encomenda.Id"
+                                               class="btn btn-sm btn-outline-success" title="Receber">
+                                                <i class="bi bi-box-arrow-in-down me-1"></i>Receber
+                                            </a>
+                                            break;
+
+                                        case "CONCLUIDA":
+                                            <span class="text-success small">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                            </span>
+                                            break;
+
+                                        case "CANCELADA":
+                                            <span class="text-danger small">
+                                                <i class="bi bi-x-circle-fill"></i>
+                                            </span>
+                                            break;
+                                    }
+
+                                    @if ((encomenda.Estado == "LISTA" || encomenda.Estado == "RASCUNHO" || encomenda.Estado == "PENDENTE") 
+                                         && (ehGestor || ehAdmin) && !foiRejeitada)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-danger border-0" title="Cancelar"
+                                                data-bs-toggle="modal" data-bs-target="#modalCancelar@(encomenda.Id)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+
+                        @* MODAIS *@
+                        @if (encomenda.Estado == "PENDENTE" && (ehGestorLogistica || ehAdmin))
+                        {
+                            <div class="modal fade" id="modalRejeitar@(encomenda.Id)" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <form asp-action="Rejeitar" asp-route-id="@encomenda.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Rejeitar</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p class="mb-2">Encomenda: <strong>@encomenda.NumeroEncomenda</strong></p>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-semibold">Motivo *</label>
+                                                    <textarea name="motivo" class="form-control" rows="3" required
+                                                              placeholder="Explique o motivo..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-x-circle me-1"></i>Rejeitar
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if ((encomenda.Estado == "LISTA" || encomenda.Estado == "RASCUNHO" || encomenda.Estado == "PENDENTE") && (ehGestor || ehAdmin) && !foiRejeitada)
+                        {
+                            <div class="modal fade" id="modalCancelar@(encomenda.Id)" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <form asp-action="Cancelar" asp-route-id="@encomenda.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <div class="modal-header bg-warning">
+                                                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Cancelar</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Cancelar <strong>@encomenda.NumeroEncomenda</strong>?</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-semibold">Motivo *</label>
+                                                    <textarea name="motivo" class="form-control" rows="2" required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Não</button>
+                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                    <i class="bi bi-trash me-1"></i>Cancelar
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @* RESUMO *@
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-1 mt-3">
+        <small class="text-muted">
+            <strong>@Model.Count</strong> encomenda(s)
+            @if (!string.IsNullOrEmpty(filtroEstado))
+            {
+                <text> · <strong>@filtroEstado</strong></text>
+            }
+        </small>
+        @if (Model.Any(e => e.ValorTotal > 0))
+        {
+            <small class="text-muted">
+                Total: <strong class="text-success">@Model.Sum(e => e.ValorTotal).ToString("C2")</strong>
+            </small>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('toggleAtivos').addEventListener('change', function() {
+            const novoValor = this.checked;
+            const estadoAtual = '@(filtroEstado ?? "")';
+            
+            let url = '@Url.Action("Index")';
+            const params = new URLSearchParams();
+            
+            if (estadoAtual) {
+                params.append('estado', estadoAtual);
+            }
+            params.append('apenasAtivos', novoValor);
+            
+            window.location.href = url + '?' + params.toString();
+        });
+    </script>
+}

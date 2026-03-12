@@ -24,7 +24,7 @@ namespace SistemaPDI.Infrastructure.Repositories
         {
             return await _context.Lotes
                 .Include(l => l.Artigo)
-                .Include(l => l.Localizacao)  // ← Adicionar
+                .Include(l => l.Localizacao)
                 .Where(l => l.Ativo)
                 .OrderBy(l => l.DataValidade)
                 .ToListAsync();
@@ -45,8 +45,21 @@ namespace SistemaPDI.Infrastructure.Repositories
         {
             return await _context.Lotes
                 .Include(l => l.Artigo)
-                .Include(l => l.Localizacao)  // ← Adicionar
+                .Include(l => l.Localizacao)
                 .FirstOrDefaultAsync(l => l.Id == id);
+        }
+
+        /// <summary>
+        /// Obtém um lote pelo número do lote.
+        /// </summary>
+        public async Task<Lote?> ObterPorNumeroAsync(string numeroLote)
+        {
+            if (string.IsNullOrEmpty(numeroLote)) return null;
+
+            return await _context.Lotes
+                .Include(l => l.Artigo)
+                .Include(l => l.Localizacao)
+                .FirstOrDefaultAsync(l => l.NumeroLote != null && l.NumeroLote.ToLower() == numeroLote.ToLower());
         }
 
         /// <summary>
@@ -63,6 +76,18 @@ namespace SistemaPDI.Infrastructure.Repositories
         }
 
         /// <summary>
+        /// Obtém todos os lotes de um artigo que estão em tráfico.
+        /// </summary>
+        public async Task<List<Lote>> ObterPendentesAsync()
+        {
+            return await _context.Lotes
+                .Include(l => l.Artigo)         
+                .Include(l => l.Localizacao)    
+                .Where(l => l.EmTrafico == true) 
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Obtém lotes disponíveis para FEFO (RN03).
         /// Ordenados por DataValidade ASC, excluindo expirados e sem stock.
         /// </summary>
@@ -72,12 +97,12 @@ namespace SistemaPDI.Infrastructure.Repositories
 
             return await _context.Lotes
                 .Include(l => l.Artigo)
-                .Include(l => l.Localizacao)  // ← Adicionar
+                .Include(l => l.Localizacao)
                 .Where(l => l.ArtigoId == artigoId
                          && l.Ativo
-                         && l.DataValidade >= dataAtual           // Não expirado
-                         && (l.QtdDisponivel - l.QtdReservada) > 0) // Tem stock disponível
-                .OrderBy(l => l.DataValidade)                      // FEFO: primeiro a expirar, primeiro a sair
+                         && l.DataValidade >= dataAtual
+                         && (l.QtdDisponivel - l.QtdReservada) > 0)
+                .OrderBy(l => l.DataValidade)
                 .ToListAsync();
         }
 
@@ -86,9 +111,11 @@ namespace SistemaPDI.Infrastructure.Repositories
         /// </summary>
         public async Task<bool> NumeroLoteJaExisteAsync(int artigoId, string numeroLote)
         {
+            if (string.IsNullOrWhiteSpace(numeroLote))
+                return false;
+
             return await _context.Lotes
-                .AnyAsync(l => l.ArtigoId == artigoId
-                            && l.NumeroLote.ToLower() == numeroLote.ToLower());
+                .AnyAsync(l => l.ArtigoId == artigoId && l.NumeroLote == numeroLote);
         }
 
         /// <summary>
@@ -100,7 +127,7 @@ namespace SistemaPDI.Infrastructure.Repositories
 
             return await _context.Lotes
                 .Include(l => l.Artigo)
-                .Include(l => l.Localizacao)  // ← Adicionar
+                .Include(l => l.Localizacao)
                 .Where(l => l.Ativo
                          && l.QtdDisponivel > 0
                          && l.DataValidade <= dataLimite)
@@ -110,11 +137,9 @@ namespace SistemaPDI.Infrastructure.Repositories
 
         /// <summary>
         /// Obtém lotes com reservas (para verificação de timeout).
-        /// Nota: A lógica de timeout será gerida pelo serviço com base em GuiaPicking.
         /// </summary>
         public async Task<List<Lote>> ObterLotesComReservasExpiradasAsync()
         {
-            // Por agora, retorna lotes com reservas para processamento pelo serviço
             return await _context.Lotes
                 .Where(l => l.Ativo && l.QtdReservada > 0)
                 .ToListAsync();

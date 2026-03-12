@@ -14,11 +14,12 @@ namespace SistemaPDI.Application.Services
             _artigoRepository = artigoRepository;
         }
 
-        // ── 1. LEITURA (GET) ──────────────────────────────────────────────────
+        // ══════════════════════════════════════════════════════════════════════
+        // LEITURA (GET)
+        // ══════════════════════════════════════════════════════════════════════
 
         public async Task<Result<List<ArtigoDto>>> ObterTodosAsync()
         {
-            // Retorna apenas artigos ativos
             var artigos = await _artigoRepository.ObterAtivosAsync();
             var dtos = artigos.Select(MapearParaDto).ToList();
             return Result<List<ArtigoDto>>.Ok(dtos);
@@ -34,7 +35,9 @@ namespace SistemaPDI.Application.Services
             return Result<ArtigoDto>.Ok(MapearParaDto(artigo));
         }
 
-        // ── 2. ESCRITA (POST / PUT / PATCH) ───────────────────────────────────
+        // ══════════════════════════════════════════════════════════════════════
+        // ESCRITA (POST / PUT / PATCH)
+        // ══════════════════════════════════════════════════════════════════════
 
         public async Task<Result<ArtigoDto>> CriarAsync(CriarArtigoDto dto)
         {
@@ -46,7 +49,9 @@ namespace SistemaPDI.Application.Services
                 UrlImagem = dto.UrlImagem,
                 CategoriaId = dto.CategoriaId,
                 StockMinimo = dto.StockMinimo,
-                StockCritico = dto.StockCritico
+                StockCritico = dto.StockCritico,
+                StockFisico = 0,
+                StockVirtual = 0
             };
 
             await _artigoRepository.AdicionarAsync(novoArtigo);
@@ -90,16 +95,15 @@ namespace SistemaPDI.Application.Services
             return Result.Ok();
         }
 
-        // ── 3. STOCK ──────────────────────────────────────────────────────────
-
+        // ══════════════════════════════════════════════════════════════════════
+        // STOCK (atualização manual - normalmente feito via Encomendas/Lotes)
+        // ══════════════════════════════════════════════════════════════════════
         public async Task<Result<int>> CalcularStockVirtualAsync(int artigoId)
         {
             var artigo = await _artigoRepository.ObterPorIdAsync(artigoId);
 
             if (artigo == null)
                 return Result<int>.Falhou("Artigo não encontrado.");
-
-            artigo.RecalcularStockVirtual();
 
             return Result<int>.Ok(artigo.StockVirtual);
         }
@@ -112,7 +116,6 @@ namespace SistemaPDI.Application.Services
                 return Result.Falhou("Artigo não encontrado para atualizar o stock.");
 
             artigo.StockFisico += quantidade;
-            artigo.RecalcularStockVirtual();
 
             await _artigoRepository.AtualizarAsync(artigo);
             await _artigoRepository.SaveChangesAsync();
@@ -157,7 +160,9 @@ namespace SistemaPDI.Application.Services
             return Result.Ok();
         }
 
-        // ── LISTAS FILTRADAS POR STOCK ────────────────────────────────────────────
+        // ══════════════════════════════════════════════════════════════════════
+        // LISTAS FILTRADAS POR STOCK
+        // ══════════════════════════════════════════════════════════════════════
 
         public async Task<Result<List<ArtigoDto>>> ObterComStockBaixoAsync()
         {
@@ -180,30 +185,34 @@ namespace SistemaPDI.Application.Services
             return Result<List<ArtigoDto>>.Ok(dtos);
         }
 
-        // ── 4. MÉTODO AUXILIAR DE MAPEAMENTO ──────────────────────────────────
+        // ══════════════════════════════════════════════════════════════════════
+        // MAPEAMENTO
+        // ══════════════════════════════════════════════════════════════════════
 
         private static ArtigoDto MapearParaDto(Artigo artigo)
         {
             return new ArtigoDto(
-                artigo.Id,
-                artigo.Nome,
-                artigo.Descricao,
-                artigo.SKU,
-                artigo.UrlImagem,
-                artigo.Categoria?.Nome ?? "Sem CategoriaDtos",
-                artigo.StockFisico,
-                artigo.StockVirtual,
-                artigo.StockPendente,
-                artigo.StockMinimo,
-                artigo.StockCritico,
-                artigo.PrecoMedio,
-                artigo.UltimoPreco,
-                artigo.CriadoEm,
-                artigo.Ativo,
-                artigo.NecessitaReposicao(),
-                artigo.EstaCritico(),
-                artigo.CategoriaId,
-                artigo.Categoria?.Nome
+                Id: artigo.Id,
+                Nome: artigo.Nome,
+                Descricao: artigo.Descricao,
+                SKU: artigo.SKU,
+                UrlImagem: artigo.UrlImagem,
+
+                StockFisico: artigo.StockFisico,
+                StockVirtual: artigo.StockVirtual,
+                StockTotal: artigo.StockFisico + artigo.StockVirtual,
+                StockPendente: artigo.StockPendente,
+                StockMinimo: artigo.StockMinimo,
+                StockCritico: artigo.StockCritico,
+
+                PrecoMedio: artigo.PrecoMedio,
+                UltimoPreco: artigo.UltimoPreco,
+                CategoriaId: artigo.CategoriaId,
+                CategoriaNome: artigo.Categoria?.Nome ?? "Sem categoria",
+                CriadoEm: artigo.CriadoEm,
+                Ativo: artigo.Ativo,
+                NecessitaReposicao: artigo.NecessitaReposicao(),
+                EstaCritico: artigo.EstaCritico()
             );
         }
     }

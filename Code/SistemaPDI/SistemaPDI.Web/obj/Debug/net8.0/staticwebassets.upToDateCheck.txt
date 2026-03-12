@@ -1,3 +1,5 @@
+wwwroot\css\fornecedores-index.css
+wwwroot\css\lotes-index.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\js\site.js
@@ -62,4 +64,16 @@ wwwroot\uploads\artigos\04a0d428-8d9e-4d84-8dd1-4aa49e6e6826.jpg
 wwwroot\uploads\artigos\0c6d0a4c-6037-4c27-b069-3469afdccb08.jpg
 wwwroot\uploads\artigos\0d41dfff-8c27-46ec-8fda-b1bc735b6602.jpg
 wwwroot\uploads\artigos\8357caa0-b08f-431a-8d32-ad15325de174.jpg
+wwwroot\uploads\artigos\97440173-0eff-4cac-b0f1-ce8af054cda9.jpg
+wwwroot\uploads\artigos\b25cfdd0-b314-49b5-9a3b-5d370da1de25.png
 wwwroot\uploads\artigos\d44ebfec-1aa2-4735-83dc-1a23f5e2c6a1.jpg
+wwwroot\uploads\artigos\dc5b5dbd-3e8a-4b90-8f7e-7290cc34b42c.png
+wwwroot\uploads\orcamentos\ENC-10-fdb7dc3b-b94e-4241-aa7a-d976fe1a18eb.pdf
+wwwroot\uploads\orcamentos\ENC-1-a6a0ccd7-bd40-46d0-85be-b50e6d670555.pdf
+wwwroot\uploads\orcamentos\ENC-2-fc0657b1-1b4d-4c99-ab04-45672ce331a3.pdf
+wwwroot\uploads\orcamentos\ENC-4-a572e9ea-2965-4ba1-950b-01378d3a82a2.pdf
+wwwroot\uploads\orcamentos\ENC-5-6b690902-b257-4dca-b47b-5390a2c33ab2.pdf
+wwwroot\uploads\orcamentos\ENC-6-07fc159a-6e46-40bc-95e6-7aa23bbdcfbd.pdf
+wwwroot\uploads\orcamentos\ENC-7-27f1393f-3186-4515-8d36-24f8e58a3564.pdf
+wwwroot\uploads\orcamentos\ENC-8-07a96e5e-148c-4422-b5c6-45df00762c23.pdf
+wwwroot\uploads\orcamentos\ENC-9-ce365e97-36e9-4bc4-a0ac-d06504bc8507.pdf

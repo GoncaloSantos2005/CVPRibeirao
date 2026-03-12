@@ -1,4 +1,4 @@
-﻿using SistemaPDI.Contracts.DTOs;
+﻿using SistemaPDI.Contracts.DTOs; // Certifique-se que AtualizarEncomendaDto está neste namespace
 using SistemaPDI.Web.Models;
 
 namespace SistemaPDI.Web.Services
@@ -52,7 +52,6 @@ namespace SistemaPDI.Web.Services
         Task<ApiResult<List<LoteDto>>> ObterLotesAsync();
         Task<ApiResult<LoteDto>> ObterLotePorIdAsync(int id);
         Task<ApiResult<List<LoteDto>>> ObterLotesPorArtigoAsync(int artigoId);
-        Task<ApiResult<List<AlertaValidadeDto>>> ObterAlertasValidadeAsync(int dias = 15);
         Task<ApiResult<LoteDto>> CriarLoteAsync(CriarLoteDto dto);
         Task<ApiResult<LoteDto>> AtualizarLoteAsync(int id, AtualizarLoteDto dto);
         Task<ApiResult> DesativarLoteAsync(int id);
@@ -70,5 +69,58 @@ namespace SistemaPDI.Web.Services
         Task<ApiResult<LocalizacaoDto>> AtualizarLocalizacaoAsync(int id, AtualizarLocalizacaoDto dto);
         Task<ApiResult> ToggleAtivoLocalizacaoAsync(int id);
         Task<ApiResult> ApagarLocalizacaoAsync(int id);
+
+        // ── Encomendas ─────────────────────────────────────────────────────
+
+        // Consultas
+        Task<ApiResult<List<EncomendaDto>>> ObterEncomendasAsync(bool incluirInativos = false);
+        Task<ApiResult<EncomendaDto>> ObterEncomendaPorIdAsync(int id);
+        Task<ApiResult<List<EncomendaDto>>> ObterEncomendaPorEstadoAsync(string estado);
+        Task<ApiResult<List<EncomendaDto>>> ObterMinhasEncomendasAsync();
+        Task<ApiResult<List<EncomendaDto>>> ObterPendentesAprovacaoAsync();
+        Task<ApiResult<List<EncomendaDto>>> ObterEncomendasEnviadasAsync();
+
+        // ETAPA 1: Lista
+        Task<ApiResult<EncomendaDto>> CriarListaAsync(CriarListaDto dto);
+        Task<ApiResult<EncomendaDto>> AtualizarListaAsync(int id, CriarListaDto dto);
+
+        // ETAPA 2: Rascunho
+        Task<ApiResult<byte[]>> GerarPdfAsync(int id);
+        Task<ApiResult<EncomendaDto>> MarcarComoRascunhoAsync(int id);
+
+        // ETAPA 3: Submeter Orçamento
+        Task<ApiResult<EncomendaDto>> SubmeterOrcamentoAsync(int id, SubmeterOrcamentoDto dto);
+
+        // ETAPA 4: Aprovação
+        Task<ApiResult<EncomendaDto>> RejeitarEncomendaAsync(int id, string motivo);
+        Task<ApiResult<EncomendaDto>> AprovarEPreencherAsync(int id, AprovarEPreencherDto dto);
+
+        // ETAPA 5: Enviar
+        Task<ApiResult<EncomendaDto>> ConfirmarEEnviarAsync(int id);
+
+        // ETAPA 6: Receção
+        Task<ApiResult<EncomendaDto>> RegistarRecepcaoAsync(RegistarRecepcaoDto dto);
+
+        // Outras
+        Task<ApiResult> CancelarEncomendaAsync(int id, string motivo);
+        Task<ApiResult> ToggleAtivoEncomendaAsync(int id);
+
+
+        // ══════════════════════════════════════════════════════════════════════
+        // HISTÓRICO DE PREÇOS
+        // ══════════════════════════════════════════════════════════════════════
+
+        Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPrecosAsync();
+        Task<ApiResult<HistoricoPrecoDto>> ObterHistoricoPrecoPorIdAsync(int id);
+        Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPorArtigoAsync(int artigoId);
+        Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPorFornecedorAsync(int fornecedorId);
+        Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPorEncomendaAsync(int encomendaId);
+        Task<ApiResult<List<HistoricoPrecoDto>>> ObterHistoricoPorPeriodoAsync(DateTime dataInicio, DateTime dataFim);
+
+        // Análises
+        Task<ApiResult<List<EvolucaoPrecoDto>>> ObterEvolucaoPrecosAsync(int artigoId);
+        Task<ApiResult<ComparacaoFornecedorDto>> CompararFornecedoresAsync(int artigoId);
+        Task<ApiResult<List<SugestaoPrecoDto>>> ObterSugestoesPrecosAsync(List<int> artigosIds, int? fornecedorId = null);
+       
     }
 }

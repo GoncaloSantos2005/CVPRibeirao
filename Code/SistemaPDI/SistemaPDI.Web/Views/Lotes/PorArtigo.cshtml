@@ -73,7 +73,7 @@
                                     <span class="text-success"><i class="bi bi-check-circle"></i></span>
                                 }
                                 <br />
-                                <small>@lote.DataValidade.ToString("dd/MM/yyyy")</small>
+                                <small>@(lote.DataValidade.HasValue ? lote.DataValidade.Value.ToString("dd/MM/yyyy") : "—")</small>
                             </td>
                             <td class="text-center">
                                 <span class="fw-bold">@lote.QtdRealmenteDisponivel</span>

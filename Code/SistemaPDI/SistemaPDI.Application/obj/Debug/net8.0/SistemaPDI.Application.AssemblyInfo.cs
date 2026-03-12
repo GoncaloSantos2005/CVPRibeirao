@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SistemaPDI.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7de20d100c268fd8aa274e326b60b6271d28690d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+234bbe30d074cf9eb6276319778f813f0d6ee75e")]
 [assembly: System.Reflection.AssemblyProductAttribute("SistemaPDI.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SistemaPDI.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
